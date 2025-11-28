@@ -12,6 +12,7 @@ mod combinedstatus;
 mod cuestate;
 mod jackstatus;
 mod loggingconfig;
+#[cfg(feature = "std")]
 mod networkstatus;
 mod playbackstate;
 mod systemconfig;
@@ -45,6 +46,7 @@ pub mod status {
     pub use super::cuestate::CueState;
     pub use super::jackstatus::AudioDevice;
     pub use super::jackstatus::JACKStatus;
+    #[cfg(feature = "std")]
     pub use super::networkstatus::NetworkStatus;
     pub use super::playbackstate::PlaybackState;
     pub use super::transportstate::TransportState;
