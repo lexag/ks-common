@@ -3,7 +3,7 @@ use core::fmt;
 #[cfg(feature = "serde")]
 extern crate serde;
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, bincode::Encode, bincode::Decode)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct StaticString<const L: usize> {
     pub content: [u8; L],
 }

@@ -8,7 +8,7 @@ use std::vec::Vec;
 /// A Cue represents a musical or technical "cue", in the meaning semi-linear timeline progression
 /// with a clearly defined start and end, which may be followed or preceded by other cues.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, bincode::Encode, bincode::Decode)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Cue {
     /// Metadata for this cue
     pub metadata: CueMetadata,
@@ -21,7 +21,7 @@ pub struct Cue {
 /// Shadow-type of Cue, without a Beat-table. Used for lightweight network communication with
 /// clients that do not care about knowing all beat details for the cue, but may still need
 /// information about events and metadata
-#[derive(Clone, Debug, PartialEq, bincode::Encode, bincode::Decode)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct CueSkeleton {
     /// Metadata for this cue
     pub metadata: CueMetadata,

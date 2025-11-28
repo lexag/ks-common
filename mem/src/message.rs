@@ -26,28 +26,28 @@ bitflags::bitflags! {
     }
 }
 
-impl bincode::Encode for MessageType {
-    fn encode<E: bincode::enc::Encoder>(
-        &self,
-        encoder: &mut E,
-    ) -> Result<(), bincode::error::EncodeError> {
-        self.bits().encode(encoder)
-    }
-}
-
-impl<'de, Context> bincode::BorrowDecode<'de, Context> for MessageType {
-    fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
-        decoder: &mut D,
-    ) -> core::result::Result<Self, bincode::error::DecodeError> {
-        Ok(Self::from_bits_retain(
-            bincode::BorrowDecode::borrow_decode(decoder)?,
-        ))
-    }
-}
-impl<Context> bincode::Decode<Context> for MessageType {
-    fn decode<D: bincode::de::Decoder<Context = Context>>(
-        decoder: &mut D,
-    ) -> core::result::Result<Self, bincode::error::DecodeError> {
-        Ok(Self::from_bits_retain(bincode::Decode::decode(decoder)?))
-    }
-}
+//impl bincode::Encode for MessageType {
+//    fn encode<E: bincode::enc::Encoder>(
+//        &self,
+//        encoder: &mut E,
+//    ) -> Result<(), bincode::error::EncodeError> {
+//        self.bits().encode(encoder)
+//    }
+//}
+//
+//impl<'de, Context> bincode::BorrowDecode<'de, Context> for MessageType {
+//    fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
+//        decoder: &mut D,
+//    ) -> core::result::Result<Self, bincode::error::DecodeError> {
+//        Ok(Self::from_bits_retain(
+//            bincode::BorrowDecode::borrow_decode(decoder)?,
+//        ))
+//    }
+//}
+//impl<Context> bincode::Decode<Context> for MessageType {
+//    fn decode<D: bincode::de::Decoder<Context = Context>>(
+//        decoder: &mut D,
+//    ) -> core::result::Result<Self, bincode::error::DecodeError> {
+//        Ok(Self::from_bits_retain(bincode::Decode::decode(decoder)?))
+//    }
+//}

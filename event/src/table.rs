@@ -4,7 +4,7 @@ use std::vec::Vec;
 
 /// Table of events that occur in a specific cue.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, bincode::Encode, bincode::Decode)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct EventTable {
     table: std::vec::Vec<Event>,
 }

@@ -1,5 +1,5 @@
 /// State of audio playback channel
-#[derive(Clone, Debug, Default, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Clone, Debug, Default, Copy)]
 pub struct PlaybackState {
     /// Current clip idx
     pub clip_idx: u16,

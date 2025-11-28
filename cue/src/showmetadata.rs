@@ -4,7 +4,7 @@ use mem::str::StaticString;
 /// might be of interest to anyone without in-depth technical knowledge about the inner workings
 /// of ClicKS should be in ShowMetadata in a human readable format.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, Clone, PartialEq, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Default, Debug, Clone, PartialEq, Copy)]
 pub struct ShowMetadata {
     /// Name of this show. Usually the name of the production
     pub name: StaticString<32>,

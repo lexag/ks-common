@@ -2,7 +2,7 @@ use mem::str::StaticString;
 
 /// Wrapper type combining both JACK client and JACK server configurations
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, Clone, PartialEq, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Default, Debug, Clone, PartialEq, Copy)]
 pub struct AudioConfiguration {
     /// Server configuration
     pub server: JACKServerConfiguration,
@@ -13,7 +13,7 @@ pub struct AudioConfiguration {
 /// JACK server configuration. The JACK server is the audio thread handler running on the OS of the
 /// ClicKS core machine.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, Clone, PartialEq, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Default, Debug, Clone, PartialEq, Copy)]
 pub struct JACKServerConfiguration {
     /// Device id for the connected audio device, either external or internal
     pub device_id: StaticString<32>,
@@ -29,7 +29,7 @@ pub struct JACKServerConfiguration {
 /// audio client that connects to the audio server. JACK server and client both run on the core
 /// machine.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, Clone, PartialEq, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Default, Debug, Clone, PartialEq, Copy)]
 pub struct JACKClientConfiguration {
     /// Name of this client
     pub name: StaticString<32>,

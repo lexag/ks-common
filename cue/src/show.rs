@@ -10,7 +10,7 @@ use std::vec::Vec;
 /// A Show represents a collection of Cues for semi-linear sequential playback
 #[cfg(feature = "std")]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, Clone, PartialEq, bincode::Decode, bincode::Encode)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub struct Show {
     /// Metadata for this show
     pub metadata: ShowMetadata,
@@ -28,7 +28,7 @@ impl Show {
 /// might be of interest to anyone without in-depth technical knowledge about the inner workings
 /// of ClicKS should be in ShowMetadata in a human readable format.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, Clone, PartialEq, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Default, Debug, Clone, PartialEq, Copy)]
 pub struct ShowMetadata {
     /// Name of this show. Usually the name of the production
     pub name: StaticString<32>,
@@ -39,7 +39,7 @@ pub struct ShowMetadata {
 
 /// Lightweight shadow of [Show] for network and uC purposes, see [CueSkeleton]
 #[cfg(feature = "std")]
-#[derive(Debug, Clone, PartialEq, bincode::Encode, bincode::Decode)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ShowSkeleton {
     /// Metadata for this show
     pub metadata: ShowMetadata,

@@ -2,7 +2,7 @@ use mem::str::StaticString;
 
 /// Description of a system audio device
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Default, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Debug, Clone, Default, Copy)]
 pub struct AudioDevice {
     /// Id string of this device
     pub id: StaticString<32>,
@@ -37,7 +37,7 @@ impl AudioDevice {
 /// line between client and server is blurred on an integrated system with its own JACK-server and
 /// a single client.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Default, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Debug, Clone, Default, Copy)]
 pub struct JACKStatus {
     /// Before starting the audio processing, the first 8 available devices to connect the JACK server to.
     /// After starting the audio processing, no audio devices are available and this value shows

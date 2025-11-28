@@ -8,7 +8,7 @@ use mem::typeflags::MessageType;
 /// Supports no-std uC systems, and should contain enough information to display accurately in
 /// realtime during playback.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Clone, Debug, Copy)]
 pub enum SmallMessage {
     /// Transport state has changed. Sent once whenever jumping or starting/stopping playback, and
     /// multiple times per second during playback.

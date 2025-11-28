@@ -12,7 +12,7 @@ use mem::typeflags::MessageType;
 #[allow(clippy::large_enum_variant)]
 #[cfg(feature = "std")]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, bincode::Encode, bincode::Decode)]
+#[derive(Clone, Debug)]
 pub enum LargeMessage {
     /// Current cue has changed. Sent whenever a new cue is loaded.
     CueData(CueState),

@@ -19,18 +19,16 @@ pub struct ShowBuilder {}
 impl ShowBuilder {
     /// Load a [Show] from a binary file representation of a show object
     /// Returns an error if the file can't be read
-    pub fn from_bin_file(
-        path: std::path::PathBuf,
-    ) -> Result<(Show, usize), bincode::error::DecodeError> {
-        use bincode::config::{BigEndian, Config, Configuration, Fixint};
+    #[cfg(feature = "postcard")]
+    pub fn from_bin_file(path: std::path::PathBuf) -> Result<Show, postcard::Error> {
+        use postcard::from_bytes;
 
         let file = match std::fs::read(path) {
             Ok(val) => val,
-            Err(_err) => return Err(bincode::error::DecodeError::Other("file read error")),
+            Err(_err) => return Err(postcard::Error::SerdeDeCustom),
         };
 
-        let config = Configuration::default();
-        bincode::decode_from_slice::<Show, Configuration<BigEndian, Fixint>>(&file, config)
+        from_bytes(&file)
     }
 
     /// Load a [Show] from a show.json file

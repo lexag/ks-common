@@ -4,7 +4,7 @@ use std::vec::Vec;
 
 /// Wrapper for network status values
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Default, Clone, bincode::Encode, bincode::Decode)]
+#[derive(Debug, Default, Clone)]
 pub struct NetworkStatus {
     /// List of network subscribers
     pub subscribers: Vec<SubscriberInfo>,

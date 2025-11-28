@@ -13,4 +13,5 @@ local = { path = "../local" }
 
 [features]
 std = ["cue/std", "mem/std", "protocol/std", "event/std", "local/std"]
-serde = ["cue/serde", "mem/serde", "beat/serde", "protocol/serde", "event/serde", "local/serde", "std"]
+serde = ["cue/serde", "mem/serde", "beat/serde", "protocol/serde", "event/serde", "local/serde"]
+postcard = ["cue/postcard", "mem/postcard", "beat/postcard", "protocol/postcard", "event/postcard", "local/postcard", "serde"]

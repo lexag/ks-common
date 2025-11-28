@@ -6,7 +6,7 @@ use mem::str::StaticString;
 
 /// Wrapper configuration type for system configuration
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, PartialEq, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub struct SystemConfiguration {
     /// Audio configuration values
     pub audio: AudioConfiguration,
@@ -49,7 +49,7 @@ impl Default for SystemConfiguration {
 }
 
 /// Represents a requested change in a system subconfiguration
-#[derive(Debug, Clone, PartialEq, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum SystemConfigurationChange {
     /// Replace the audio configuration with the provided
     ChangeAudioConfiguration(AudioConfiguration),

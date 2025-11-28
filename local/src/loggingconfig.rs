@@ -1,5 +1,3 @@
-use core::fmt;
-
 bitflags::bitflags! {
     /// Bitflag for different types of logs
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -18,45 +16,45 @@ bitflags::bitflags! {
     }
 }
 
-impl bincode::Encode for LogKind {
-    fn encode<E: bincode::enc::Encoder>(
-        &self,
-        encoder: &mut E,
-    ) -> Result<(), bincode::error::EncodeError> {
-        self.bits().encode(encoder)
-    }
-}
-
-impl<'de, Context> bincode::BorrowDecode<'de, Context> for LogKind {
-    fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
-        decoder: &mut D,
-    ) -> core::result::Result<Self, bincode::error::DecodeError> {
-        Ok(Self::from_bits_retain(
-            bincode::BorrowDecode::borrow_decode(decoder)?,
-        ))
-    }
-}
-
-impl<Context> bincode::Decode<Context> for LogKind {
-    fn decode<D: bincode::de::Decoder<Context = Context>>(
-        decoder: &mut D,
-    ) -> core::result::Result<Self, bincode::error::DecodeError> {
-        Ok(Self::from_bits_retain(bincode::Decode::decode(decoder)?))
-    }
-}
-
-impl fmt::Display for LogKind {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            LogKind::Error => write!(f, "ERROR"),
-            LogKind::Warning => write!(f, "WARNING"),
-            LogKind::Note => write!(f, "NOTE"),
-            LogKind::Command => write!(f, "COMMAND"),
-            LogKind::Debug => write!(f, "DEBUG"),
-            _ => write!(f, "multiple flags"),
-        }
-    }
-}
+//impl bincode::Encode for LogKind {
+//    fn encode<E: bincode::enc::Encoder>(
+//        &self,
+//        encoder: &mut E,
+//    ) -> Result<()::EncodeError> {
+//        self.bits().encode(encoder)
+//    }
+//}
+//
+//impl<'de, Context> bincode::BorrowDecode<'de, Context> for LogKind {
+//    fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
+//        decoder: &mut D,
+//    ) -> core::result::Result<Self::DecodeError> {
+//        Ok(Self::from_bits_retain(
+//            bincode::BorrowDecode::borrow_decode(decoder)?,
+//        ))
+//    }
+//}
+//
+//impl<Context> bincode::Decode<Context> for LogKind {
+//    fn decode<D: bincode::de::Decoder<Context = Context>>(
+//        decoder: &mut D,
+//    ) -> core::result::Result<Self::DecodeError> {
+//        Ok(Self::from_bits_retain(bincode::Decode::decode(decoder)?))
+//    }
+//}
+//
+//impl fmt::Display for LogKind {
+//    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//        match *self {
+//            LogKind::Error => write!(f, "ERROR"),
+//            LogKind::Warning => write!(f, "WARNING"),
+//            LogKind::Note => write!(f, "NOTE"),
+//            LogKind::Command => write!(f, "COMMAND"),
+//            LogKind::Debug => write!(f, "DEBUG"),
+//            _ => write!(f, "multiple flags"),
+//        }
+//    }
+//}
 
 bitflags::bitflags! {
     /// Bitflag for various contexts from which log messages can source
@@ -78,31 +76,31 @@ bitflags::bitflags! {
     }
 }
 
-impl bincode::Encode for LogContext {
-    fn encode<E: bincode::enc::Encoder>(
-        &self,
-        encoder: &mut E,
-    ) -> Result<(), bincode::error::EncodeError> {
-        self.bits().encode(encoder)
-    }
-}
-
-impl<'de, Context> bincode::BorrowDecode<'de, Context> for LogContext {
-    fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
-        decoder: &mut D,
-    ) -> core::result::Result<Self, bincode::error::DecodeError> {
-        Ok(Self::from_bits_retain(
-            bincode::BorrowDecode::borrow_decode(decoder)?,
-        ))
-    }
-}
-impl<Context> bincode::Decode<Context> for LogContext {
-    fn decode<D: bincode::de::Decoder<Context = Context>>(
-        decoder: &mut D,
-    ) -> core::result::Result<Self, bincode::error::DecodeError> {
-        Ok(Self::from_bits_retain(bincode::Decode::decode(decoder)?))
-    }
-}
+//impl bincode::Encode for LogContext {
+//    fn encode<E: bincode::enc::Encoder>(
+//        &self,
+//        encoder: &mut E,
+//    ) -> Result<()::EncodeError> {
+//        self.bits().encode(encoder)
+//    }
+//}
+//
+//impl<'de, Context> bincode::BorrowDecode<'de, Context> for LogContext {
+//    fn borrow_decode<D: bincode::de::BorrowDecoder<'de, Context = Context>>(
+//        decoder: &mut D,
+//    ) -> core::result::Result<Self::DecodeError> {
+//        Ok(Self::from_bits_retain(
+//            bincode::BorrowDecode::borrow_decode(decoder)?,
+//        ))
+//    }
+//}
+//impl<Context> bincode::Decode<Context> for LogContext {
+//    fn decode<D: bincode::de::Decoder<Context = Context>>(
+//        decoder: &mut D,
+//    ) -> core::result::Result<Self::DecodeError> {
+//        Ok(Self::from_bits_retain(bincode::Decode::decode(decoder)?))
+//    }
+//}
 
 impl LogContext {
     /// Get a human readable name of this LogContext
@@ -121,7 +119,7 @@ impl LogContext {
 
 /// Wrapper configuration for the logging device
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, PartialEq, Default, Copy, bincode::Encode, bincode::Decode)]
+#[derive(Debug, Clone, PartialEq, Default, Copy)]
 pub struct LoggerConfiguration {
     /// Which log-kinds to log. Ignores all others.
     pub active_kinds: LogKind,
