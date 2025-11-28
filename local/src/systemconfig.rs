@@ -50,6 +50,7 @@ impl Default for SystemConfiguration {
 
 /// Represents a requested change in a system subconfiguration
 #[derive(Debug, Clone, PartialEq, Copy)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum SystemConfigurationChange {
     /// Replace the audio configuration with the provided
     ChangeAudioConfiguration(AudioConfiguration),

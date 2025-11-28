@@ -8,6 +8,7 @@ use event::JumpModeChange;
 /// A ControlAction must not take enough time to disturb the audio thread, and should in general be
 /// lightweight actions.
 #[derive(Clone, Debug, PartialEq, Copy)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ControlAction {
     /// Start transport playback running.
     TransportStart,

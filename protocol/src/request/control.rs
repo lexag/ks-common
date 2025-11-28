@@ -9,6 +9,7 @@ use mem::{
 /// Requests may be non-realtime-safe, apart from ControlAction, which has its own subactions that
 /// must all be realtime safe during playback.
 #[derive(Debug, Clone, PartialEq, Copy)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Request {
     /// Inform all subscribers with all relevant system status messages.
     /// Used to get a complete update on status when connecting a new subscriber.
