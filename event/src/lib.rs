@@ -11,6 +11,7 @@ pub use event::PauseEventBehaviour;
 mod eventcursor;
 pub use eventcursor::EventCursor;
 
+#[cfg(feature = "std")]
 mod table;
 #[cfg(feature = "std")]
 pub use table::EventTable;
