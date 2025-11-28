@@ -73,7 +73,7 @@ impl Cue {
             br.beats.push(Beat {
                 count: i as u8 % 4 + 1,
                 bar_number: i as u8 / 4 + 1,
-                length: 500,
+                length: 500_000,
             });
         }
         br.events.set(
@@ -97,7 +97,7 @@ impl Cue {
             br.beats.push(Beat {
                 count: i as u8 % 4 + 1,
                 bar_number: i as u8 / 4 + 1,
-                length: 500,
+                length: 500_000,
             });
         }
         br.events.set(
@@ -251,7 +251,7 @@ mod tests {
             Beat {
                 count: beat,
                 bar_number: bar,
-                length: 500000,
+                length: 500_000,
             }
         }
         let mut c = Cue::empty();
