@@ -8,7 +8,9 @@ pub use event::JumpModeChange;
 pub use event::JumpRequirement;
 pub use event::PauseEventBehaviour;
 
+#[cfg(feature = "std")]
 mod eventcursor;
+#[cfg(feature = "std")]
 pub use eventcursor::EventCursor;
 
 #[cfg(feature = "std")]
