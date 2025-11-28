@@ -1,3 +1,5 @@
+use core::fmt;
+
 bitflags::bitflags! {
     /// Bitflag for different types of logs
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -43,18 +45,18 @@ bitflags::bitflags! {
 //    }
 //}
 //
-//impl fmt::Display for LogKind {
-//    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//        match *self {
-//            LogKind::Error => write!(f, "ERROR"),
-//            LogKind::Warning => write!(f, "WARNING"),
-//            LogKind::Note => write!(f, "NOTE"),
-//            LogKind::Command => write!(f, "COMMAND"),
-//            LogKind::Debug => write!(f, "DEBUG"),
-//            _ => write!(f, "multiple flags"),
-//        }
-//    }
-//}
+impl fmt::Display for LogKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            LogKind::Error => write!(f, "ERROR"),
+            LogKind::Warning => write!(f, "WARNING"),
+            LogKind::Note => write!(f, "NOTE"),
+            LogKind::Command => write!(f, "COMMAND"),
+            LogKind::Debug => write!(f, "DEBUG"),
+            _ => write!(f, "multiple flags"),
+        }
+    }
+}
 
 bitflags::bitflags! {
     /// Bitflag for various contexts from which log messages can source
