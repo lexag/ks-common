@@ -1,5 +1,5 @@
 use beat::Beat;
-use event::{Event, EventCursor, EventDescription, EventTable, JumpModeChange, JumpRequirement};
+use event::{Event, EventDescription, EventTable, JumpModeChange, JumpRequirement};
 
 extern crate std;
 use crate::CueMetadata;
