@@ -193,35 +193,34 @@ impl Cue {
         let mut new_beats = self.beats.clone();
         let mut cursor = EventCursor::new(&self.events);
 
-        for beat in &mut new_beats {
-            if beat.is_null() {
-                break;
-            }
+        while let Some(event) = cursor.get_next() {
+            match event.event {
+                Some(EventDescription::TempoChangeEvent { tempo }) => {
+                    cursor.step();
+                    beat_length = 1000000 * 60 / tempo as u32;
+                    accelerator = 0.0;
+                }
+                Some(EventDescription::GradualTempoChangeEvent {
+                    start_tempo,
+                    end_tempo,
+                    length,
+                }) => {
+                    cursor.step();
+                    beat_length = 1000000 * 60 / start_tempo as u32;
+                    accelerator = (60000000.0 / end_tempo as f32 - 60000000.0 / start_tempo as f32)
+                        / length as f32;
+                    beats_left_in_change = length;
+                }
 
-            if let Some(EventDescription::TempoChangeEvent { tempo }) =
-                cursor.get().unwrap_or_default().event
-            {
-                cursor.step();
-                beat_length = 1000000 * 60 / tempo as u32;
-                accelerator = 0.0;
+                _ => {}
             }
-            if let Some(EventDescription::GradualTempoChangeEvent {
-                start_tempo,
-                end_tempo,
-                length,
-            }) = cursor.get().unwrap_or_default().event
-            {
-                cursor.step();
-                beat_length = 1000000 * 60 / start_tempo as u32;
-                accelerator = (60000000.0 / end_tempo as f32 - 60000000.0 / start_tempo as f32)
-                    / length as f32;
-                beats_left_in_change = length;
-            }
-            beat.length = beat_length;
-            beat_length = (beat_length as f32 + accelerator) as u32;
-            beats_left_in_change = beats_left_in_change.saturating_sub(1);
-            if beats_left_in_change == 0 {
-                accelerator = 0.0;
+            for beat in &mut new_beats[event.location as usize..] {
+                beat.length = beat_length;
+                beat_length = (beat_length as f32 + accelerator) as u32;
+                beats_left_in_change = beats_left_in_change.saturating_sub(1);
+                if beats_left_in_change == 0 {
+                    accelerator = 0.0;
+                }
             }
         }
 
@@ -286,15 +285,72 @@ mod tests {
 
     #[test]
     fn test_recalculate_tempo() {
-        let mut c = Cue::example();
-        c.events.set(
-            0,
-            Event::new(0, EventDescription::TempoChangeEvent { tempo: 125 }),
-        );
-        c.recalculate_tempo_changes();
+        for offset in 0usize..3usize {
+            let mut c = Cue::example();
+            c.events.set(
+                0,
+                Event::new(
+                    offset as u16,
+                    EventDescription::TempoChangeEvent { tempo: 125 },
+                ),
+            );
+            c.recalculate_tempo_changes();
 
-        assert_eq!(c.beats[0].length, 480000);
-        assert_eq!(c.beats[1].length, 480000);
-        assert_eq!(c.beats[3].length, 480000);
+            assert_eq!(c.beats[offset].length, 480000);
+            assert_eq!(c.beats[1 + offset].length, 480000);
+            assert_eq!(c.beats[3 + offset].length, 480000);
+        }
+    }
+
+    #[test]
+    fn test_recalculate_tempo_gradual_down() {
+        for offset in 0usize..3usize {
+            let mut c = Cue::example();
+            c.events.set(
+                0,
+                Event::new(
+                    offset as u16,
+                    EventDescription::GradualTempoChangeEvent {
+                        start_tempo: 100,
+                        end_tempo: 125,
+                        length: 4,
+                    },
+                ),
+            );
+            c.recalculate_tempo_changes();
+
+            assert_eq!(c.beats[offset].length, 600000);
+            for i in 0..3 {
+                assert!(c.beats[i + offset].length > c.beats[i + 1 + offset].length);
+            }
+            assert_eq!(c.beats[4 + offset].length, 480000);
+            assert_eq!(c.beats[5 + offset].length, 480000);
+        }
+    }
+
+    #[test]
+    fn test_recalculate_tempo_gradual_up() {
+        for offset in 0usize..3usize {
+            let mut c = Cue::example();
+            c.events.set(
+                0,
+                Event::new(
+                    offset as u16,
+                    EventDescription::GradualTempoChangeEvent {
+                        start_tempo: 125,
+                        end_tempo: 100,
+                        length: 4,
+                    },
+                ),
+            );
+            c.recalculate_tempo_changes();
+
+            assert_eq!(c.beats[offset].length, 480000);
+            for i in 0..3 {
+                assert!(c.beats[i + offset].length < c.beats[i + 1 + offset].length);
+            }
+            assert_eq!(c.beats[4 + offset].length, 600000);
+            assert_eq!(c.beats[5 + offset].length, 600000);
+        }
     }
 }
