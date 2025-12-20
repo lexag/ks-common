@@ -191,36 +191,34 @@ impl Cue {
         let mut accelerator: f32 = 0.0;
 
         let mut new_beats = self.beats.clone();
-        let mut cursor = EventCursor::new(&self.events);
 
-        while let Some(event) = cursor.get_next() {
-            match event.event {
-                Some(EventDescription::TempoChangeEvent { tempo }) => {
-                    cursor.step();
-                    beat_length = 1000000 * 60 / tempo as u32;
-                    accelerator = 0.0;
-                }
-                Some(EventDescription::GradualTempoChangeEvent {
-                    start_tempo,
-                    end_tempo,
-                    length,
-                }) => {
-                    cursor.step();
-                    beat_length = 1000000 * 60 / start_tempo as u32;
-                    accelerator = (60000000.0 / end_tempo as f32 - 60000000.0 / start_tempo as f32)
-                        / length as f32;
-                    beats_left_in_change = length;
-                }
+        for (i, beat) in &mut new_beats.iter_mut().enumerate() {
+            for event in self.events.get_at_location(i as u16) {
+                match event.event {
+                    Some(EventDescription::TempoChangeEvent { tempo }) => {
+                        beat_length = 1000000 * 60 / tempo as u32;
+                        accelerator = 0.0;
+                    }
+                    Some(EventDescription::GradualTempoChangeEvent {
+                        start_tempo,
+                        end_tempo,
+                        length,
+                    }) => {
+                        beat_length = 1000000 * 60 / start_tempo as u32;
+                        accelerator = (60000000.0 / end_tempo as f32
+                            - 60000000.0 / start_tempo as f32)
+                            / length as f32;
+                        beats_left_in_change = length;
+                    }
 
-                _ => {}
+                    _ => {}
+                }
             }
-            for beat in &mut new_beats[event.location as usize..] {
-                beat.length = beat_length;
-                beat_length = (beat_length as f32 + accelerator) as u32;
-                beats_left_in_change = beats_left_in_change.saturating_sub(1);
-                if beats_left_in_change == 0 {
-                    accelerator = 0.0;
-                }
+            beat.length = beat_length;
+            beat_length = (beat_length as f32 + accelerator) as u32;
+            beats_left_in_change = beats_left_in_change.saturating_sub(1);
+            if beats_left_in_change == 0 {
+                accelerator = 0.0;
             }
         }
 
@@ -236,6 +234,7 @@ impl Cue {
 #[cfg(test)]
 mod tests {
     use super::*;
+    extern crate std;
     #[test]
     fn test_get_beat() {
         let c = Cue::example();
@@ -352,5 +351,33 @@ mod tests {
             assert_eq!(c.beats[4 + offset].length, 600000);
             assert_eq!(c.beats[5 + offset].length, 600000);
         }
+    }
+
+    #[test]
+    fn test_recalculate_tempo_twice() {
+        let mut c = Cue::example();
+
+        c.events.push(Event {
+            location: 2,
+            event: Some(EventDescription::GradualTempoChangeEvent {
+                start_tempo: 150,
+                end_tempo: 75,
+                length: 4,
+            }),
+        });
+        c.events.push(Event {
+            location: 7,
+            event: Some(EventDescription::TempoChangeEvent { tempo: 150 }),
+        });
+
+        c.recalculate_tempo_changes();
+        let lengths = c.beats.iter().map(|b| b.length).collect::<Vec<u32>>();
+
+        // Beginning is still 120 BPM
+        assert_eq!(c.beats[0].length, 500000, "{:?}", lengths);
+        assert_eq!(c.beats[2].length, 60000000 / 150, "{:?}", lengths);
+        assert_eq!(c.beats[2 + 4].length, 60000000 / 75, "{:?}", lengths);
+        assert_eq!(c.beats[7].length, 60000000 / 150, "{:?}", lengths);
+        assert_eq!(c.beats[8].length, 60000000 / 150, "{:?}", lengths);
     }
 }

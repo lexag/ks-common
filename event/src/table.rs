@@ -84,6 +84,15 @@ impl EventTable {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
+    /// Get all events located at the given beat
+    pub fn get_at_location(&mut self, location: u16) -> Vec<Event> {
+        self.table
+            .iter()
+            .filter(|&e| e.location == location)
+            .copied()
+            .collect()
+    }
 }
 
 #[cfg(test)]
