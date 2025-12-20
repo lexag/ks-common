@@ -41,8 +41,8 @@ impl AudioDevice {
 pub struct JACKStatus {
     /// Before starting the audio processing, the first 8 available devices to connect the JACK server to.
     /// After starting the audio processing, no audio devices are available and this value shows
-    /// [None; 8]
-    pub available_devices: [Option<AudioDevice>; 8],
+    /// [None; 32]
+    pub available_devices: [Option<AudioDevice>; 32],
     /// IO-size (num_input_channels, num_output_channels) of the selected audio device.
     /// Only available after audio processing starts.
     pub io_size: (usize, usize),
