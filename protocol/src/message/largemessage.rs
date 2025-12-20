@@ -33,10 +33,10 @@ impl LargeMessage {
     /// Get the type flag of this message
     pub fn to_type(&self) -> MessageType {
         match self {
-            Self::CueData(..) => MessageType::JACKStateChanged,
+            Self::CueData(..) => MessageType::CueData,
             Self::ShowData(..) => MessageType::ShowData,
-            Self::NetworkChanged(..) => MessageType::ShowData,
-            Self::JACKStateChanged(..) => MessageType::NetworkChanged,
+            Self::NetworkChanged(..) => MessageType::NetworkChanged,
+            Self::JACKStateChanged(..) => MessageType::JACKStateChanged,
             Self::ConfigurationChanged(..) => MessageType::ConfigurationChanged,
         }
     }
