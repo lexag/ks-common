@@ -1,0 +1,13 @@
+[package]
+name = "mem"
+edition = "2024"
+
+[dependencies]
+bitflags = { version = "2.10.0", features = ["serde"] }
+serde = { version = "1.0.228", optional = true, features = ["derive"] }
+postcard = { version = "1.1.3", optional = true }
+
+[features]
+serde = ["dep:serde"]
+std = []
+postcard = ["dep:postcard"]
