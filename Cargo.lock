@@ -13,7 +13,7 @@ dependencies = [
 
 [[package]]
 name = "beat"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "postcard",
  "serde",
@@ -46,7 +46,7 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "beat",
  "cue",
@@ -64,7 +64,7 @@ checksum = "790eea4361631c5e7d22598ecd5723ff611904e3344ce8720784c93e3d83d40b"
 
 [[package]]
 name = "cue"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "beat",
  "event",
@@ -76,7 +76,7 @@ dependencies = [
 
 [[package]]
 name = "event"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "mem",
  "postcard",
@@ -116,7 +116,7 @@ checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
 
 [[package]]
 name = "local"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "beat",
  "bitflags",
@@ -139,7 +139,7 @@ dependencies = [
 
 [[package]]
 name = "mem"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "bitflags",
  "postcard",
@@ -174,7 +174,7 @@ dependencies = [
 
 [[package]]
 name = "protocol"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "beat",
  "bitflags",
