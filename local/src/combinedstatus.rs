@@ -26,7 +26,6 @@ pub struct CombinedStatus {
 impl Default for CombinedStatus {
     fn default() -> Self {
         Self {
-            // FIXME: uglyyyyyyyyyyyyyyyy
             sources: [
                 AudioSourceState::BeatStatus(BeatState::default()),
                 AudioSourceState::TimeStatus(TimecodeInstant::default()),
