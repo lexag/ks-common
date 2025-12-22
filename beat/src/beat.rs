@@ -16,15 +16,6 @@ pub struct Beat {
     pub length: u32,
 }
 
-impl fmt::Debug for Beat {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Beat")
-            .field("count", &self.count)
-            .field("length", &self.length)
-            .finish()
-    }
-}
-
 impl Beat {
     /// Returns an empty Beat
     /// Does not have any length, and is thus unstable for playback.
