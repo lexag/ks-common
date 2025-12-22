@@ -1,8 +1,6 @@
-use core::fmt;
-
 /// Beat represent a musical beat, or a subdivision thereof
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Default, PartialEq, Copy)]
+#[derive(Clone, Default, PartialEq, Copy, Debug)]
 pub struct Beat {
     /// Beat number, first beat in a bar typically has 1, followed by 2 etc. Can be between 0 and 255.
     pub count: u8,
