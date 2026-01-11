@@ -5,6 +5,8 @@ bitflags::bitflags! {
     pub struct MessageType: u16 {
         /// Transport changed
         const TransportData = 0x01;
+        /// Transport changed
+        const TimecodeData = 0x800;
         /// Beat changed
         const BeatData = 0x02;
         /// Cue changed (lightweight)
@@ -25,6 +27,8 @@ bitflags::bitflags! {
         const Heartbeat = 0x100;
         /// Event occured
         const EventOccured = 0x200;
+        /// Log occured
+        const Log = 0x1000;
     }
 }
 
