@@ -15,6 +15,7 @@ mod loggingconfig;
 #[cfg(feature = "std")]
 mod networkstatus;
 mod playbackstate;
+mod smallcuestate;
 mod systemconfig;
 mod transportstate;
 
@@ -49,5 +50,6 @@ pub mod status {
     #[cfg(feature = "std")]
     pub use super::networkstatus::NetworkStatus;
     pub use super::playbackstate::PlaybackState;
+    pub use super::smallcuestate::SmallCueState;
     pub use super::transportstate::TransportState;
 }
