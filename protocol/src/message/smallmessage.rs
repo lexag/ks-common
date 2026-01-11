@@ -1,6 +1,6 @@
 use crate::message::heartbeat::Heartbeat;
 use event::EventDescription;
-use local::status::{BeatState, TransportState};
+use local::status::{BeatState, SmallCueState, TransportState};
 use mem::typeflags::MessageType;
 
 /// Definition of small messages sent from core to client.
@@ -15,6 +15,8 @@ pub enum SmallMessage {
     TransportData(TransportState),
     /// Current beat has changed. Sent at the start of a new beat during playback
     BeatData(BeatState),
+    /// Current cue has changed. Sent when loading a new cue.
+    CueData(SmallCueState),
     /// A shutdown has been requested. Sent to all subscribers on a Shutdown request, telling them
     /// to unsubscribe and/or disconnect, and expect to not receive subsequent Heartbeats
     ShutdownOccured,
@@ -34,6 +36,7 @@ impl SmallMessage {
             Self::ShutdownOccured => MessageType::ShutdownOccured,
             Self::Heartbeat(..) => MessageType::Heartbeat,
             Self::EventOccured(..) => MessageType::EventOccured,
+            Self::CueData(..) => MessageType::SmallCueData,
         }
     }
 }

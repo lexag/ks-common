@@ -7,6 +7,8 @@ bitflags::bitflags! {
         const TransportData = 0x01;
         /// Beat changed
         const BeatData = 0x02;
+        /// Cue changed (lightweight)
+        const SmallCueData = 0x400;
         /// Cue changed
         const CueData = 0x04;
         /// Show changed

@@ -1,4 +1,4 @@
-use cue::Cue;
+use cue::{Cue, CueMetadata};
 
 /// Status of the current cue
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
