@@ -27,6 +27,48 @@ impl<const L: usize> StaticString<L> {
         a
     }
 
+    fn copy_from<const N: usize>(
+        &mut self,
+        str: StaticString<N>,
+        start: usize,
+        end: usize,
+        dest: usize,
+    ) {
+        if end > N || start > end || dest >= L || (end - start) + dest > L {
+            return;
+        }
+        self.content[dest..dest + (end - start)].copy_from_slice(&str.content[start..end]);
+    }
+
+    pub fn insert_replace<const N: usize>(&mut self, str: StaticString<N>, idx: usize) {
+        if idx > L {
+            return;
+        }
+        let strlen = str.len();
+        self.copy_from(
+            str,
+            0,
+            if self.len() + strlen > L {
+                L - self.len()
+            } else {
+                strlen
+            },
+            idx,
+        );
+    }
+
+    pub fn append<const N: usize>(&mut self, str: StaticString<N>) {
+        self.insert_replace(str, self.len());
+    }
+
+    pub fn append_char(&mut self, char: u8) {
+        self.set_char(self.len(), char);
+    }
+
+    pub fn clear(&mut self) {
+        *self = Self::empty();
+    }
+
     fn len_of_int(mut val: i32) -> usize {
         let neg_sign = val < 0;
         val = val.abs();
@@ -155,13 +197,14 @@ impl<'de, const L: usize> serde::Deserialize<'de> for StaticString<L> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    type S<const L: usize> = StaticString<L>;
 
     #[test]
     fn str_8() {
-        let a = StaticString::<8>::new("");
-        let b = StaticString::<8>::new("abc");
-        let c = StaticString::<8>::new("abcdefgh");
-        let d = StaticString::<8>::new("lmnopqrstuvw");
+        let a = S::<8>::new("");
+        let b = S::<8>::new("abc");
+        let c = S::<8>::new("abcdefgh");
+        let d = S::<8>::new("lmnopqrstuvw");
 
         assert_eq!(a.str(), "");
         assert_eq!(b.str(), "abc");
@@ -177,15 +220,45 @@ mod tests {
         ];
         let slice_c = [b'G', b'r', b'e', b'e', b't', b'i', b'n', b'g'];
         let slice_d = [];
-        let a = StaticString::<8>::from_slice(&slice_a);
-        let b = StaticString::<8>::from_slice(&slice_b);
-        let c = StaticString::<8>::from_slice(&slice_c);
-        let d = StaticString::<8>::from_slice(&slice_d);
+        let a = S::<8>::from_slice(&slice_a);
+        let b = S::<8>::from_slice(&slice_b);
+        let c = S::<8>::from_slice(&slice_c);
+        let d = S::<8>::from_slice(&slice_d);
 
         assert_eq!(a.str(), "Hello");
         assert_eq!(b.str(), "Hello Wo");
         assert_eq!(c.str(), "Greeting");
         assert_eq!(d.str(), "");
+    }
+
+    #[test]
+    fn append() {
+        let q = S::<4>::new("xyz");
+        let mut s = S::<4>::empty();
+        let mut ss = S::<8>::new("abcd");
+        s.append(ss);
+        assert_eq!(s.str(), "abcd");
+        ss.append(s);
+        assert_eq!(ss.str(), "abcdabcd");
+        s.clear();
+        ss.clear();
+        s.append(q);
+        assert_eq!(s.str(), "xyz");
+        s.append(q);
+        assert_eq!(s.str(), "xyzx");
+    }
+
+    #[test]
+    fn append_char() {
+        let mut s = S::<4>::empty();
+        s.append_char(b'a');
+        assert_eq!(s.str(), "a");
+        s.append_char(b'b');
+        s.append_char(b'c');
+        s.append_char(b'd');
+        assert_eq!(s.str(), "abcd");
+        s.append_char(b'e');
+        assert_eq!(s.str(), "abcd");
     }
 
     #[test]
