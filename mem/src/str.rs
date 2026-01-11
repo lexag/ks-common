@@ -19,6 +19,14 @@ impl<const L: usize> StaticString<L> {
         Self { content: a }
     }
 
+    pub fn from_slice(src: &[u8]) -> Self {
+        let srclen = src.len();
+        let len = if L < srclen { L } else { srclen };
+        let mut a = Self::empty();
+        a.content[..len].copy_from_slice(&src[..len]);
+        a
+    }
+
     pub fn set_char(&mut self, idx: usize, char: u8) {
         if idx < self.content.len() {
             self.content[idx] = char;
@@ -116,5 +124,24 @@ mod tests {
         assert_eq!(b.str(), "abc");
         assert_eq!(c.str(), "abcdefgh");
         assert_eq!(d.str(), "lmnopqrs");
+    }
+
+    #[test]
+    fn str_from_slice() {
+        let slice_a = [b'H', b'e', b'l', b'l', b'o'];
+        let slice_b = [
+            b'H', b'e', b'l', b'l', b'o', b' ', b'W', b'o', b'r', b'l', b'd', b'!',
+        ];
+        let slice_c = [b'G', b'r', b'e', b'e', b't', b'i', b'n', b'g'];
+        let slice_d = [];
+        let a = StaticString::<8>::from_slice(&slice_a);
+        let b = StaticString::<8>::from_slice(&slice_b);
+        let c = StaticString::<8>::from_slice(&slice_c);
+        let d = StaticString::<8>::from_slice(&slice_d);
+
+        assert_eq!(a.str(), "Hello");
+        assert_eq!(b.str(), "Hello Wo");
+        assert_eq!(c.str(), "Greeting");
+        assert_eq!(d.str(), "");
     }
 }
