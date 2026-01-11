@@ -17,6 +17,7 @@ mod networkstatus;
 mod playbackstate;
 mod smallcuestate;
 mod systemconfig;
+mod timecodestate;
 mod transportstate;
 
 pub mod config {
@@ -51,5 +52,6 @@ pub mod status {
     pub use super::networkstatus::NetworkStatus;
     pub use super::playbackstate::PlaybackState;
     pub use super::smallcuestate::SmallCueState;
+    pub use super::timecodestate::TimecodeState;
     pub use super::transportstate::TransportState;
 }
