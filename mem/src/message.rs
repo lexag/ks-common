@@ -27,6 +27,8 @@ bitflags::bitflags! {
         const Heartbeat = 0x100;
         /// Event occured
         const EventOccured = 0x200;
+        /// Log occured
+        const Log = 0x1000;
     }
 }
 
