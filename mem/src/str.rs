@@ -81,7 +81,19 @@ impl<const L: usize> StaticString<L> {
         if neg_sign {
             num_digits += 1;
         }
-        assert_ne!(num_digits, 0);
+        num_digits
+    }
+
+    fn len_of_fract(mut val: core::primitive::f32) -> usize {
+        const EPS: f32 = core::primitive::f32::EPSILON;
+        if val < EPS {
+            return 1;
+        }
+        let mut num_digits = 0;
+        while ((val as u32) as f32 - val).abs() >= EPS {
+            val *= 10.0;
+            num_digits += 1;
+        }
         num_digits
     }
 
@@ -108,6 +120,42 @@ impl<const L: usize> StaticString<L> {
                 s.set_char(i + offs, 0x30 + (val % 10) as u8);
                 val /= 10;
             }
+        }
+        s
+    }
+
+    pub fn from_float<T: core::convert::Into<core::primitive::f32>>(val: T) -> Self {
+        fn units_place(val: f32) -> u8 {
+            (val as u32 % 10) as u8
+        }
+
+        extern crate std;
+        let mut value: core::primitive::f32 = val.into();
+        let neg = value < 0.0;
+        let offs = if neg { 1 } else { 0 };
+        let int = value.abs() as i32;
+        let int_digits = Self::len_of_int(int);
+        value = value.abs();
+        let frac = value - (int as f32);
+        let frac_digits = Self::len_of_fract(frac);
+        if offs + int_digits > L {
+            return Self::new("########");
+        }
+
+        let int_s = Self::from_int(int);
+        let mut mul = 10.0;
+        let mut s = Self::empty();
+        if neg {
+            s.append_char(b'-');
+        }
+        s.append(int_s);
+        if offs + int_digits + 1 >= L {
+            return s;
+        }
+        s.append_char(b'.');
+        for _ in 0..frac_digits {
+            s.append_char(0x30 + units_place(frac * mul));
+            mul *= 10.0;
         }
         s
     }
@@ -263,36 +311,70 @@ mod tests {
 
     #[test]
     fn num_digits() {
-        assert_eq!(StaticString::<0>::len_of_int(0), 1);
-        assert_eq!(StaticString::<0>::len_of_int(1), 1);
-        assert_eq!(StaticString::<0>::len_of_int(-1), 2);
-        assert_eq!(StaticString::<0>::len_of_int(-9), 2);
-        assert_eq!(StaticString::<0>::len_of_int(10), 2);
-        assert_eq!(StaticString::<0>::len_of_int(99), 2);
-        assert_eq!(StaticString::<0>::len_of_int(100), 3);
-        assert_eq!(StaticString::<0>::len_of_int(999), 3);
-        assert_eq!(StaticString::<0>::len_of_int(1000), 4);
-        assert_eq!(StaticString::<0>::len_of_int(9999), 4);
-        assert_eq!(StaticString::<0>::len_of_int(-1234), 5);
+        assert_eq!(S::<0>::len_of_int(0), 1);
+        assert_eq!(S::<0>::len_of_int(1), 1);
+        assert_eq!(S::<0>::len_of_int(-1), 2);
+        assert_eq!(S::<0>::len_of_int(-9), 2);
+        assert_eq!(S::<0>::len_of_int(10), 2);
+        assert_eq!(S::<0>::len_of_int(99), 2);
+        assert_eq!(S::<0>::len_of_int(100), 3);
+        assert_eq!(S::<0>::len_of_int(999), 3);
+        assert_eq!(S::<0>::len_of_int(1000), 4);
+        assert_eq!(S::<0>::len_of_int(9999), 4);
+        assert_eq!(S::<0>::len_of_int(-1234), 5);
     }
 
     #[test]
     fn format_ints() {
-        assert_eq!(StaticString::<8>::from_int(0).str(), "0");
-        assert_eq!(StaticString::<8>::from_int(1).str(), "1");
-        assert_eq!(StaticString::<8>::from_int(-1).str(), "-1");
-        assert_eq!(StaticString::<8>::from_int(192).str(), "192");
-        assert_eq!(StaticString::<1>::from_int(1234).str(), "#");
-        assert_eq!(StaticString::<2>::from_int(1234).str(), "##");
-        assert_eq!(StaticString::<3>::from_int(1234).str(), "1e3");
-        assert_eq!(StaticString::<4>::from_int(1234).str(), "1234");
-        assert_eq!(StaticString::<1>::from_int(-1234).str(), "#");
-        assert_eq!(StaticString::<2>::from_int(-1234).str(), "##");
-        assert_eq!(StaticString::<3>::from_int(-1234).str(), "###");
-        assert_eq!(StaticString::<4>::from_int(-1234).str(), "-1e3");
-        assert_eq!(StaticString::<5>::from_int(-1234).str(), "-1234");
-        assert_eq!(StaticString::<8>::from_int(123456789).str(), "1e8");
-        assert_eq!(StaticString::<8>::from_int(187654321).str(), "2e8");
-        assert_eq!(StaticString::<16>::from_int(123456789).str(), "123456789");
+        assert_eq!(S::<8>::from_int(0).str(), "0");
+        assert_eq!(S::<8>::from_int(1).str(), "1");
+        assert_eq!(S::<8>::from_int(-1).str(), "-1");
+        assert_eq!(S::<8>::from_int(192).str(), "192");
+        assert_eq!(S::<1>::from_int(1234).str(), "#");
+        assert_eq!(S::<2>::from_int(1234).str(), "##");
+        assert_eq!(S::<3>::from_int(1234).str(), "1e3");
+        assert_eq!(S::<4>::from_int(1234).str(), "1234");
+        assert_eq!(S::<1>::from_int(-1234).str(), "#");
+        assert_eq!(S::<2>::from_int(-1234).str(), "##");
+        assert_eq!(S::<3>::from_int(-1234).str(), "###");
+        assert_eq!(S::<4>::from_int(-1234).str(), "-1e3");
+        assert_eq!(S::<5>::from_int(-1234).str(), "-1234");
+        assert_eq!(S::<8>::from_int(123456789).str(), "1e8");
+        assert_eq!(S::<8>::from_int(187654321).str(), "2e8");
+        assert_eq!(S::<16>::from_int(123456789).str(), "123456789");
+    }
+
+    #[test]
+    fn format_floats() {
+        assert_eq!(S::<8>::from_float(0.0).str(), "0.0");
+        assert_eq!(S::<8>::from_float(0.1).str(), "0.1");
+        assert_eq!(S::<8>::from_float(0.9).str(), "0.9");
+        assert_eq!(S::<8>::from_float(-0.1234).str(), "-0.1234");
+        assert_eq!(S::<8>::from_float(-0.1234567).str(), "-0.12345");
+        assert_eq!(S::<8>::from_float(-0.1234511).str(), "-0.12345");
+        assert_eq!(S::<8>::from_float(0.1234561).str(), "0.123456");
+        assert_eq!(S::<8>::from_float(0.1234569).str(), "0.123456");
+        assert_eq!(S::<3>::from_float(-123.456).str(), "###");
+        assert_eq!(S::<4>::from_float(-123.456).str(), "-123");
+        assert_eq!(S::<5>::from_float(-123.456).str(), "-123");
+        assert_eq!(S::<6>::from_float(-123.456).str(), "-123.4");
+        assert_eq!(S::<7>::from_float(-123.456).str(), "-123.45");
+        assert_eq!(S::<3>::from_float(123.456).str(), "123");
+        assert_eq!(S::<4>::from_float(123.456).str(), "123");
+        assert_eq!(S::<5>::from_float(123.456).str(), "123.4");
+        assert_eq!(S::<6>::from_float(123.456).str(), "123.45");
+        assert_eq!(S::<7>::from_float(123.456).str(), "123.456");
+        assert_eq!(S::<8>::from_float(1.0).str(), "1.0");
+        assert_eq!(S::<8>::from_float(-1.0).str(), "-1.0");
+        assert_eq!(S::<8>::from_float(192.0).str(), "192.0");
+        assert_eq!(S::<1>::from_float(1234.0).str(), "#");
+        assert_eq!(S::<2>::from_float(1234.0).str(), "##");
+        assert_eq!(S::<3>::from_float(1234.0).str(), "###");
+        assert_eq!(S::<4>::from_float(1234.0).str(), "1234");
+        assert_eq!(S::<1>::from_float(-1234.0).str(), "#");
+        assert_eq!(S::<2>::from_float(-1234.0).str(), "##");
+        assert_eq!(S::<3>::from_float(-1234.0).str(), "###");
+        assert_eq!(S::<4>::from_float(-1234.0).str(), "####");
+        assert_eq!(S::<5>::from_float(-1234.0).str(), "-1234");
     }
 }
