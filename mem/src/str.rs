@@ -69,13 +69,13 @@ impl<const L: usize> StaticString<L> {
         *self = Self::empty();
     }
 
-    fn len_of_int(mut val: i32) -> usize {
+    fn len_of_int(mut val: i32) -> i32 {
         let neg_sign = val < 0;
         val = val.abs();
         let mut num_digits = 1;
         let mut comp = 10;
         while comp - 1 < val {
-            comp *= 10;
+            comp = comp.saturating_mul(10);
             num_digits += 1;
         }
         if neg_sign {
@@ -84,7 +84,7 @@ impl<const L: usize> StaticString<L> {
         num_digits
     }
 
-    fn len_of_fract(mut val: core::primitive::f32) -> usize {
+    fn len_of_fract(mut val: core::primitive::f32) -> i32 {
         const EPS: f32 = core::primitive::f32::EPSILON;
         if val < EPS {
             return 1;
@@ -97,40 +97,87 @@ impl<const L: usize> StaticString<L> {
         num_digits
     }
 
-    pub fn from_int(mut val: i32) -> Self {
+    fn write_as_exponent(neg: bool, num: i32, exp: i32) -> Self {
+        if num.abs() > 9 {
+            return Self::empty();
+        }
+        let mut s = Self::empty();
+        if neg {
+            s.append_char(b'-');
+        }
+        s.append_char(0x30 + num as u8);
+        s.append_char(b'e');
+        s.append(Self::from_int(exp));
+        s
+    }
+
+    pub fn from_large_int<T: core::convert::TryInto<i128> + Clone>(value: T) -> Self {
+        let val = if let Ok(val) = value.clone().try_into() {
+            val
+        } else {
+            return Self::empty();
+        };
+
+        // If in range of i32 -> handle as i32
+        if val <= i32::MAX as i128 && val >= i32::MIN as i128 {
+            return Self::from_int(val as i32);
+        };
+
+        // cut down until smaller than i32
+        if let Ok(ival) = value.try_into() {
+            let neg = ival < 0;
+            let mut val: i128 = ival.abs();
+            let mut extra_digits = 0;
+            while val > i32::MAX as i128 {
+                val /= 10;
+                extra_digits += 1;
+            }
+
+            Self::write_as_exponent(
+                neg,
+                Self::top_digit_int(val as i32),
+                Self::len_of_int(val as i32) + extra_digits - 1,
+            )
+        } else {
+            Self::empty()
+        }
+    }
+
+    fn top_digit_int(val: i32) -> i32 {
+        let digits = Self::len_of_int(val.abs());
+        (val.abs() / 10_i32.pow(digits as u32 - 2) + 5) / 10
+    }
+
+    fn units_place_float(val: f32) -> u8 {
+        (val as u32 % 10) as u8
+    }
+
+    pub fn from_int<T: core::convert::Into<i32>>(value: T) -> Self {
+        let mut val: i32 = value.into();
         let digits = Self::len_of_int(val.abs());
         let neg = val < 0;
         let offs = if neg { 1 } else { 0 };
         let mut s = Self::empty();
         val = val.abs();
-        if neg {
-            s.set_char(0, b'-');
-        }
-        if digits + offs > L && L <= 2 + offs {
+        if digits as usize + offs > L && L <= 2 + offs {
             s = Self::new("###");
-        } else if digits + offs > L {
-            s.set_char(
-                offs,
-                0x30 + ((val / 10_i32.pow(digits as u32 - 2) + 5) / 10) as u8,
-            );
-            s.set_char(1 + offs, b'e');
-            s.set_char(2 + offs, 0x30 + digits as u8 - 1);
+        } else if digits as usize + offs > L {
+            s = Self::write_as_exponent(neg, Self::top_digit_int(val), digits - 1);
         } else {
+            if neg {
+                s.set_char(0, b'-');
+            }
             for i in (0..digits).rev() {
-                s.set_char(i + offs, 0x30 + (val % 10) as u8);
+                s.set_char(i as usize + offs, 0x30 + (val % 10) as u8);
                 val /= 10;
             }
         }
         s
     }
 
-    pub fn from_float<T: core::convert::Into<core::primitive::f32>>(val: T) -> Self {
-        fn units_place(val: f32) -> u8 {
-            (val as u32 % 10) as u8
-        }
-
+    pub fn from_float<T: core::convert::Into<core::primitive::f32>>(value: T) -> Self {
         extern crate std;
-        let mut value: core::primitive::f32 = val.into();
+        let mut value: core::primitive::f32 = value.into();
         let neg = value < 0.0;
         let offs = if neg { 1 } else { 0 };
         let int = value.abs() as i32;
@@ -138,7 +185,7 @@ impl<const L: usize> StaticString<L> {
         value = value.abs();
         let frac = value - (int as f32);
         let frac_digits = Self::len_of_fract(frac);
-        if offs + int_digits > L {
+        if offs + int_digits as usize > L {
             return Self::new("########");
         }
 
@@ -149,12 +196,12 @@ impl<const L: usize> StaticString<L> {
             s.append_char(b'-');
         }
         s.append(int_s);
-        if offs + int_digits + 1 >= L {
+        if offs + int_digits as usize + 1 >= L {
             return s;
         }
         s.append_char(b'.');
         for _ in 0..frac_digits {
-            s.append_char(0x30 + units_place(frac * mul));
+            s.append_char(0x30 + Self::units_place_float(frac * mul));
             mul *= 10.0;
         }
         s
@@ -310,7 +357,7 @@ mod tests {
     }
 
     #[test]
-    fn num_digits() {
+    fn len_of_int() {
         assert_eq!(S::<0>::len_of_int(0), 1);
         assert_eq!(S::<0>::len_of_int(1), 1);
         assert_eq!(S::<0>::len_of_int(-1), 2);
@@ -319,7 +366,7 @@ mod tests {
         assert_eq!(S::<0>::len_of_int(99), 2);
         assert_eq!(S::<0>::len_of_int(100), 3);
         assert_eq!(S::<0>::len_of_int(999), 3);
-        assert_eq!(S::<0>::len_of_int(1000), 4);
+        assert_eq!(S::<0>::len_of_int(1234), 4);
         assert_eq!(S::<0>::len_of_int(9999), 4);
         assert_eq!(S::<0>::len_of_int(-1234), 5);
     }
@@ -342,6 +389,12 @@ mod tests {
         assert_eq!(S::<8>::from_int(123456789).str(), "1e8");
         assert_eq!(S::<8>::from_int(187654321).str(), "2e8");
         assert_eq!(S::<16>::from_int(123456789).str(), "123456789");
+
+        assert_eq!(S::<8>::from_large_int(u32::MAX).str(), "4e9");
+        assert_eq!(S::<8>::from_large_int(1234).str(), "1234");
+        assert_eq!(S::<8>::from_large_int(1e9 as i128).str(), "1e9");
+        assert_eq!(S::<8>::from_large_int(-3e14 as i128).str(), "-3e14");
+        assert_eq!(S::<8>::from_large_int(-1900000000).str(), "-2e9");
     }
 
     #[test]
@@ -376,5 +429,19 @@ mod tests {
         assert_eq!(S::<3>::from_float(-1234.0).str(), "###");
         assert_eq!(S::<4>::from_float(-1234.0).str(), "####");
         assert_eq!(S::<5>::from_float(-1234.0).str(), "-1234");
+    }
+
+    #[test]
+    fn format_exponent() {
+        assert_eq!(S::<8>::write_as_exponent(true, 1, 2).str(), "-1e2");
+        assert_eq!(S::<8>::write_as_exponent(false, 3, 4).str(), "3e4");
+        assert_eq!(S::<8>::write_as_exponent(false, 9, 123).str(), "9e123");
+    }
+
+    #[test]
+    fn top_digit_int() {
+        assert_eq!(S::<0>::top_digit_int(1234), 1);
+        assert_eq!(S::<0>::top_digit_int(2341), 2);
+        assert_eq!(S::<0>::top_digit_int(-3456), 3);
     }
 }
