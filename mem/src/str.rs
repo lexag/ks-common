@@ -45,16 +45,28 @@ impl<const L: usize> StaticString<L> {
             return;
         }
         let strlen = str.len();
-        self.copy_from(
-            str,
-            0,
-            if self.len() + strlen > L {
-                L - self.len()
-            } else {
-                strlen
-            },
-            idx,
-        );
+        // if idx + strlen > L, i.e. we will run out of destination string when pasting, only take
+        // L - idx, i.e. as many chars as will fit before we run out
+        self.copy_from(str, 0, if idx + strlen > L { L - idx } else { strlen }, idx);
+    }
+
+    pub fn insert_shift<const N: usize>(&mut self, str: StaticString<N>, idx: usize) {
+        if idx > L {
+            return;
+        }
+
+        extern crate std;
+
+        let mut buf = Self::empty();
+        std::println!("self: {}", self);
+        std::println!("str: {}", str);
+        buf.copy_from(*self, idx, L, 0);
+        std::println!("buf: {}", buf);
+        self.insert_replace(str, idx);
+        std::println!("self: {}", self);
+        if !self.is_full() {
+            self.insert_replace(buf, idx + str.len());
+        }
     }
 
     pub fn append<const N: usize>(&mut self, str: StaticString<N>) {
@@ -67,6 +79,17 @@ impl<const L: usize> StaticString<L> {
 
     pub fn clear(&mut self) {
         *self = Self::empty();
+    }
+
+    pub fn replace(&mut self, from: u8, to: u8) {
+        if from == 0 || to == 0 {
+            return;
+        }
+        for c in &mut self.content {
+            if *c == from {
+                *c = to
+            }
+        }
     }
 
     fn len_of_int(mut val: i32) -> i32 {
@@ -231,6 +254,10 @@ impl<const L: usize> StaticString<L> {
 
     pub fn is_empty(self) -> bool {
         self.len() == 0
+    }
+
+    pub fn is_full(self) -> bool {
+        self.len() == L
     }
 }
 
@@ -443,5 +470,36 @@ mod tests {
         assert_eq!(S::<0>::top_digit_int(1234), 1);
         assert_eq!(S::<0>::top_digit_int(2341), 2);
         assert_eq!(S::<0>::top_digit_int(-3456), 3);
+    }
+
+    #[test]
+    fn insert() {
+        let mut s = S::<8>::new("abcd");
+        let mut ss = S::<8>::new("wxyz");
+        s.insert_replace(ss, 2);
+        assert_eq!(s.str(), "abwxyz");
+        s.insert_shift(ss, 1);
+        assert_eq!(s.str(), "awxyzbwx");
+
+        s = S::new("abwxyz");
+        ss = S::new("wxyz");
+        s.insert_replace(ss, 1);
+        assert_eq!(s.str(), "awxyzz");
+
+        s = S::new("12345678");
+        ss = S::new("abcd");
+        s.insert_replace(ss, 1);
+        assert_eq!(s.str(), "1abcd678");
+    }
+
+    #[test]
+    fn replace() {
+        let mut s = S::<16>::new("Hello, World!");
+        s.replace(b'o', b'i');
+        assert_eq!(s.str(), "Helli, Wirld!");
+        s.replace(0, b'y');
+        assert_eq!(s.str(), "Helli, Wirld!");
+        s.replace(b'l', 0);
+        assert_eq!(s.str(), "Helli, Wirld!");
     }
 }
