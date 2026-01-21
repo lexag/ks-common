@@ -551,7 +551,10 @@ mod tests {
     #[test]
     fn serde_json() {
         let s = S::<8>::new("abc");
-        assert_eq!(serde_json::to_string(&s).unwrap(), "\"abc\"");
-        assert_eq!(serde_json::to_string(&s).unwrap().len(), 5);
+        let serialized = serde_json::to_string(&s).unwrap();
+        assert_eq!(serialized, "\"abc\"");
+        assert_eq!(serialized.len(), 5);
+        let ss: S<8> = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(s, ss);
     }
 }
