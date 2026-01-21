@@ -29,6 +29,9 @@ impl SystemConfiguration {
             SystemConfigurationChange::ChangeChannelConfiguration(idx, config) => {
                 self.channels[idx as usize] = config
             }
+            SystemConfigurationChange::ChangeMetronomeConfiguration(config) => {
+                self.metronome = config
+            }
         }
     }
 }
@@ -84,4 +87,6 @@ pub enum SystemConfigurationChange {
     ChangeLoggerConfiguration(LoggerConfiguration),
     /// Replace the channel configuration at the provided index with the provided configuration
     ChangeChannelConfiguration(u8, ChannelConfiguration),
+    /// Replace the metronome configuration with the provided
+    ChangeMetronomeConfiguration(MetronomeConfiguration),
 }
