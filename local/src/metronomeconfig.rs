@@ -1,5 +1,5 @@
-use num_traits::Float;
-
+#[allow(missing_docs)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub enum MetronomeWaveform {
     Sine,
@@ -8,19 +8,30 @@ pub enum MetronomeWaveform {
     Triangle,
 }
 
+/// Defines the parameters for a single metronome "blip"
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct MetronomeClick {
-    frequency: u16,
-    length: u16,
-    wave: MetronomeWaveform,
+    /// Frequency in Hz
+    pub frequency: u16,
+    /// Length in ms
+    pub length: u16,
+    /// Waveform
+    pub wave: MetronomeWaveform,
 }
 
+/// Configuration for metronome settings; 4 different levels of click settings
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub struct MetronomeConfiguration {
-    click_primary: MetronomeClick,
-    click_secondary: MetronomeClick,
-    click_tertiary: MetronomeClick,
-    click_quartenary: MetronomeClick,
+    /// Primary click; generally beat 1
+    pub click_primary: MetronomeClick,
+    /// Secondary click: generally beat 2, 3, 4 etc.
+    pub click_secondary: MetronomeClick,
+    /// Tertiary click: generally offbeats
+    pub click_tertiary: MetronomeClick,
+    /// Quartenary click: generally 16ths or triplets
+    pub click_quartenary: MetronomeClick,
 }
 
 impl Default for MetronomeConfiguration {
@@ -51,34 +62,32 @@ impl Default for MetronomeConfiguration {
 }
 
 impl MetronomeClick {
-    const PI: f32 = 3.1415926535;
-
-    fn buffer(&self, sample_rate: u32) -> [f32; 96000] {
+    /// Generate a wave buffer for this click
+    #[cfg(feature = "std")]
+    pub fn buffer(&self, sample_rate: u32) -> [f32; 96000] {
         let mut buf = [0f32; 96000];
         let func = match self.wave {
-            MetronomeWaveform::Sine => |f: f32| <f32 as Float>::sin(f),
+            MetronomeWaveform::Sine => |f: f32| f32::sin(f),
             MetronomeWaveform::SquircleSine => |f: f32| {
-                let fs = <f32 as Float>::sin(f);
-                let out = fs / (fs.abs() + 0.5).abs() * 1.5;
-                out
+                let fs = f32::sin(f);
+                fs / (fs.abs() + 0.5).abs() * 1.5
             },
             MetronomeWaveform::Square => |f: f32| {
-                let fs = <f32 as Float>::sin(f);
-                let out = fs.signum();
-                out
+                let fs = f32::sin(f);
+                fs.signum()
             },
             MetronomeWaveform::Triangle => |f: f32| {
-                let mut out = f / 2.0 * Self::PI - 1.0;
-                out = out % 1.0;
+                let mut out = f / 2.0 * core::f32::consts::PI - 1.0;
+                out %= 1.0;
                 out -= 0.5;
                 out = out.abs();
                 4.0 * out - 1.0
             },
         };
         for i in 0..self.length as u32 * sample_rate / 1000 {
-            buf[i as usize] =
-                (func)(i as f32 * Self::PI * self.frequency as f32 * 2.0 / sample_rate as f32)
-                    * 0.1 as f32;
+            buf[i as usize] = (func)(
+                i as f32 * core::f32::consts::PI * self.frequency as f32 * 2.0 / sample_rate as f32,
+            ) * 0.1_f32;
         }
         buf
     }

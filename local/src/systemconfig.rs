@@ -1,5 +1,7 @@
 use crate::{
-    audioconfig::AudioConfiguration, channelconfig::ChannelConfiguration,
+    audioconfig::AudioConfiguration,
+    channelconfig::ChannelConfiguration,
+    config::{MetronomeClick, MetronomeConfiguration, MetronomeWaveform},
     loggingconfig::LoggerConfiguration,
 };
 use mem::str::StaticString;
@@ -40,6 +42,28 @@ impl Default for SystemConfiguration {
                 name: StaticString::empty(),
                 ..ChannelConfiguration::default()
             }; 32],
+            metronome: MetronomeConfiguration {
+                click_primary: MetronomeClick {
+                    frequency: 1200,
+                    length: 4,
+                    wave: MetronomeWaveform::SquircleSine,
+                },
+                click_secondary: MetronomeClick {
+                    frequency: 600,
+                    length: 4,
+                    wave: MetronomeWaveform::SquircleSine,
+                },
+                click_tertiary: MetronomeClick {
+                    frequency: 300,
+                    length: 4,
+                    wave: MetronomeWaveform::SquircleSine,
+                },
+                click_quartenary: MetronomeClick {
+                    frequency: 150,
+                    length: 4,
+                    wave: MetronomeWaveform::SquircleSine,
+                },
+            },
         };
         a.channels[0].name = StaticString::new("Metronome");
         a.channels[1].name = StaticString::new("Timecode");
