@@ -14,6 +14,7 @@ mod jackstatus;
 mod loggingconfig;
 #[cfg(feature = "std")]
 mod logitem;
+mod metronomeconfig;
 #[cfg(feature = "std")]
 mod networkstatus;
 mod playbackstate;
@@ -36,6 +37,10 @@ pub mod config {
     pub use super::loggingconfig::LoggerConfiguration;
     #[cfg(feature = "std")]
     pub use super::logitem::LogItem;
+    pub use super::metronomeconfig::MetronomeClick;
+    pub use super::metronomeconfig::MetronomeConfiguration;
+    pub use super::metronomeconfig::MetronomeWaveform;
+
     pub use super::systemconfig::SystemConfiguration;
     pub use super::systemconfig::SystemConfigurationChange;
 }

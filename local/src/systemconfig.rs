@@ -1,5 +1,7 @@
 use crate::{
-    audioconfig::AudioConfiguration, channelconfig::ChannelConfiguration,
+    audioconfig::AudioConfiguration,
+    channelconfig::ChannelConfiguration,
+    config::{MetronomeClick, MetronomeConfiguration, MetronomeWaveform},
     loggingconfig::LoggerConfiguration,
 };
 use mem::str::StaticString;
@@ -14,6 +16,8 @@ pub struct SystemConfiguration {
     pub logger: LoggerConfiguration,
     /// Audio channel configuration values
     pub channels: [ChannelConfiguration; 32],
+    /// Metronome settings
+    pub metronome: MetronomeConfiguration,
 }
 
 impl SystemConfiguration {
@@ -24,6 +28,9 @@ impl SystemConfiguration {
             SystemConfigurationChange::ChangeLoggerConfiguration(config) => self.logger = config,
             SystemConfigurationChange::ChangeChannelConfiguration(idx, config) => {
                 self.channels[idx as usize] = config
+            }
+            SystemConfigurationChange::ChangeMetronomeConfiguration(config) => {
+                self.metronome = config
             }
         }
     }
@@ -38,6 +45,28 @@ impl Default for SystemConfiguration {
                 name: StaticString::empty(),
                 ..ChannelConfiguration::default()
             }; 32],
+            metronome: MetronomeConfiguration {
+                click_primary: MetronomeClick {
+                    frequency: 1200,
+                    length: 4,
+                    wave: MetronomeWaveform::SquircleSine,
+                },
+                click_secondary: MetronomeClick {
+                    frequency: 600,
+                    length: 4,
+                    wave: MetronomeWaveform::SquircleSine,
+                },
+                click_tertiary: MetronomeClick {
+                    frequency: 300,
+                    length: 4,
+                    wave: MetronomeWaveform::SquircleSine,
+                },
+                click_quartenary: MetronomeClick {
+                    frequency: 150,
+                    length: 4,
+                    wave: MetronomeWaveform::SquircleSine,
+                },
+            },
         };
         a.channels[0].name = StaticString::new("Metronome");
         a.channels[1].name = StaticString::new("Timecode");
@@ -58,4 +87,6 @@ pub enum SystemConfigurationChange {
     ChangeLoggerConfiguration(LoggerConfiguration),
     /// Replace the channel configuration at the provided index with the provided configuration
     ChangeChannelConfiguration(u8, ChannelConfiguration),
+    /// Replace the metronome configuration with the provided
+    ChangeMetronomeConfiguration(MetronomeConfiguration),
 }
