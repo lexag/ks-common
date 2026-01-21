@@ -265,6 +265,7 @@ dependencies = [
  "bitflags",
  "postcard",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
