@@ -1,6 +1,6 @@
 use mem::str::StaticString;
 
-/// Metadata for a Show instance. Like with [crate::cue::CueMetadata], anything that is human readable and
+/// Metadata for a Show instance. Like with [crate::cuemetadata::CueMetadata], anything that is human readable and
 /// might be of interest to anyone without in-depth technical knowledge about the inner workings
 /// of ClicKS should be in ShowMetadata in a human readable format.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
