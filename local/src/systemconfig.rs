@@ -14,6 +14,8 @@ pub struct SystemConfiguration {
     pub logger: LoggerConfiguration,
     /// Audio channel configuration values
     pub channels: [ChannelConfiguration; 32],
+    /// Metronome settings
+    pub metronome: MetronomeConfiguration,
 }
 
 impl SystemConfiguration {
