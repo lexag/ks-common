@@ -285,7 +285,17 @@ impl<const L: usize> serde::Serialize for StaticString<L> {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_str(self.str())
+        if serializer.is_human_readable() {
+            serializer.serialize_str(self.str())
+        } else {
+            use serde::ser::SerializeTuple;
+
+            let mut seq = serializer.serialize_tuple(L)?;
+            for element in self.content {
+                seq.serialize_element(&element)?;
+            }
+            seq.end()
+        }
     }
 }
 
@@ -301,7 +311,7 @@ impl<'de, const L: usize> serde::Deserialize<'de> for StaticString<L> {
             type Value = StaticString<L>;
 
             fn expecting(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-                write!(f, "a string of exactly {} bytes", L)
+                write!(f, "a u8 string buffer of exactly {} bytes OR a human-readable string {} bytes or shorter", L, L)
             }
 
             fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
@@ -310,9 +320,31 @@ impl<'de, const L: usize> serde::Deserialize<'de> for StaticString<L> {
             {
                 Ok(StaticString::new(v))
             }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut s = StaticString::empty();
+                for index in 0..L {
+                    let next = seq.next_element::<u8>();
+                    match next {
+                        Ok(val) => match val {
+                            None => {}
+                            Some(val) => s.set_char(index, val),
+                        },
+                        Err(err) => return Err(err),
+                    };
+                }
+                Ok(s)
+            }
         }
 
-        deserializer.deserialize_str(StaticStringVisitor::<L>)
+        if deserializer.is_human_readable() {
+            deserializer.deserialize_str(StaticStringVisitor::<L>)
+        } else {
+            deserializer.deserialize_tuple(L, StaticStringVisitor::<L>)
+        }
     }
 }
 
@@ -501,5 +533,28 @@ mod tests {
         assert_eq!(s.str(), "Helli, Wirld!");
         s.replace(b'l', 0);
         assert_eq!(s.str(), "Helli, Wirld!");
+    }
+
+    #[cfg(all(feature = "serde", feature = "postcard"))]
+    #[test]
+    fn serde_binary() {
+        let s = S::<8>::new("abc");
+        let mut buf = [0u8; 16];
+        let serialized = postcard::to_slice(&s, &mut buf).unwrap();
+        assert_eq!(serialized, &[b'a', b'b', b'c', 0, 0, 0, 0, 0]);
+        assert_eq!(serialized.len(), 8);
+        let ss: S<8> = postcard::from_bytes(serialized).unwrap();
+        assert_eq!(ss, s);
+    }
+
+    #[cfg(all(feature = "serde", feature = "json"))]
+    #[test]
+    fn serde_json() {
+        let s = S::<8>::new("abc");
+        let serialized = serde_json::to_string(&s).unwrap();
+        assert_eq!(serialized, "\"abc\"");
+        assert_eq!(serialized.len(), 5);
+        let ss: S<8> = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(s, ss);
     }
 }
