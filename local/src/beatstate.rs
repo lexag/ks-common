@@ -14,4 +14,6 @@ pub struct BeatState {
     /// Requested change of VLT. An audio source can't change the VLT by itself, so it must be
     /// forwarded to a module that can.
     pub requested_vlt_action: JumpModeChange,
+    /// Microseconds left until next beat occurs
+    pub us_to_next_beat: u32,
 }
