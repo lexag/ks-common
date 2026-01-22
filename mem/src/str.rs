@@ -55,15 +55,9 @@ impl<const L: usize> StaticString<L> {
             return;
         }
 
-        extern crate std;
-
         let mut buf = Self::empty();
-        std::println!("self: {}", self);
-        std::println!("str: {}", str);
         buf.copy_from(*self, idx, L, 0);
-        std::println!("buf: {}", buf);
         self.insert_replace(str, idx);
-        std::println!("self: {}", self);
         if !self.is_full() {
             self.insert_replace(buf, idx + str.len());
         }
@@ -199,7 +193,6 @@ impl<const L: usize> StaticString<L> {
     }
 
     pub fn from_float<T: core::convert::Into<core::primitive::f32>>(value: T) -> Self {
-        extern crate std;
         let mut value: core::primitive::f32 = value.into();
         let neg = value < 0.0;
         let offs = if neg { 1 } else { 0 };

@@ -83,7 +83,6 @@ impl TimecodeInstant {
 
     /// Add an amount of microseconds to this timestamp.
     pub fn add_us(&mut self, time_us: u64) {
-        extern crate std;
         let us_per_frame = 1_000_000 / self.frame_rate as u64;
         let frames = time_us / us_per_frame;
         let subframe_us = time_us % us_per_frame;
