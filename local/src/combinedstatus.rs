@@ -1,7 +1,7 @@
 use crate::{
     audiosource::AudioSourceState, beatstate::BeatState, cuestate::CueState,
     jackstatus::JACKStatus, networkstatus::NetworkStatus, playbackstate::PlaybackState,
-    transportstate::TransportState,
+    status::TimecodeState, transportstate::TransportState,
 };
 use cue::Show;
 use mem::smpte::TimecodeInstant;
@@ -21,6 +21,8 @@ pub struct CombinedStatus {
     pub network_status: NetworkStatus,
     /// JACK audio server-client status
     pub jack_status: JACKStatus,
+    /// SMPTE LTC status
+    pub ltc: TimecodeState,
 }
 
 impl Default for CombinedStatus {
@@ -65,6 +67,7 @@ impl Default for CombinedStatus {
             show: Show::default(),
             network_status: NetworkStatus::default(),
             jack_status: JACKStatus::default(),
+            ltc: TimecodeState::default(),
         }
     }
 }
