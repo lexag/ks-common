@@ -4,7 +4,6 @@ use crate::{
     status::TimecodeState, transportstate::TransportState,
 };
 use cue::Show;
-use mem::smpte::TimecodeInstant;
 
 /// Wrapper type for the core audio processing status.
 #[derive(Clone, Debug)]
@@ -21,8 +20,6 @@ pub struct CombinedStatus {
     pub network_status: NetworkStatus,
     /// JACK audio server-client status
     pub jack_status: JACKStatus,
-    /// SMPTE LTC status
-    pub ltc: TimecodeState,
 }
 
 impl Default for CombinedStatus {
@@ -30,7 +27,7 @@ impl Default for CombinedStatus {
         Self {
             sources: [
                 AudioSourceState::BeatStatus(BeatState::default()),
-                AudioSourceState::TimeStatus(TimecodeInstant::default()),
+                AudioSourceState::TimeStatus(TimecodeState::default()),
                 AudioSourceState::PlaybackStatus(PlaybackState::default()),
                 AudioSourceState::PlaybackStatus(PlaybackState::default()),
                 AudioSourceState::PlaybackStatus(PlaybackState::default()),
@@ -67,7 +64,6 @@ impl Default for CombinedStatus {
             show: Show::default(),
             network_status: NetworkStatus::default(),
             jack_status: JACKStatus::default(),
-            ltc: TimecodeState::default(),
         }
     }
 }
@@ -88,9 +84,9 @@ impl CombinedStatus {
         }
     }
     /// Get the timecode time state from channel 2
-    pub fn time_state(&self) -> TimecodeInstant {
+    pub fn time_state(&self) -> TimecodeState {
         if self.sources.is_empty() {
-            return TimecodeInstant::default();
+            return TimecodeState::default();
         }
         if let AudioSourceState::TimeStatus(state) = &self.sources[1] {
             *state
