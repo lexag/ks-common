@@ -13,9 +13,14 @@ mod cuestate;
 mod jackstatus;
 mod loggingconfig;
 #[cfg(feature = "std")]
+mod logitem;
+mod metronomeconfig;
+#[cfg(feature = "std")]
 mod networkstatus;
 mod playbackstate;
+mod smallcuestate;
 mod systemconfig;
+mod timecodestate;
 mod transportstate;
 
 pub mod config {
@@ -30,6 +35,12 @@ pub mod config {
     pub use super::loggingconfig::LogContext;
     pub use super::loggingconfig::LogKind;
     pub use super::loggingconfig::LoggerConfiguration;
+    #[cfg(feature = "std")]
+    pub use super::logitem::LogItem;
+    pub use super::metronomeconfig::MetronomeClick;
+    pub use super::metronomeconfig::MetronomeConfiguration;
+    pub use super::metronomeconfig::MetronomeWaveform;
+
     pub use super::systemconfig::SystemConfiguration;
     pub use super::systemconfig::SystemConfigurationChange;
 }
@@ -49,5 +60,7 @@ pub mod status {
     #[cfg(feature = "std")]
     pub use super::networkstatus::NetworkStatus;
     pub use super::playbackstate::PlaybackState;
+    pub use super::smallcuestate::SmallCueState;
+    pub use super::timecodestate::TimecodeState;
     pub use super::transportstate::TransportState;
 }

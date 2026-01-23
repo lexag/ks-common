@@ -11,9 +11,10 @@ bitflags = { version = "2.10.0" }
 serde = { version = "1.0.228", features = ["serde_derive", "derive"], default-features = false, optional = true }
 serde_json = { version = "1.0.145", optional = true, default-features = false, features = ["alloc"]  }
 postcard = { version = "1.1.3", optional = true }
+chrono = { version = "0.4.42", optional = true }
 
 [features]
 serde = ["dep:serde"]
-std = []
+std = ["dep:chrono"]
 postcard = ["dep:postcard"]
 json = ["dep:serde_json"]

@@ -83,8 +83,15 @@ impl TimecodeInstant {
 
     /// Add an amount of microseconds to this timestamp.
     pub fn add_us(&mut self, time_us: u64) {
-        self.f += (time_us * self.frame_rate as u64 / 1000000) as i8;
-        self.propagate();
+        let us_per_frame = 1_000_000 / self.frame_rate as u64;
+        let frames = time_us / us_per_frame;
+        let subframe_us = time_us % us_per_frame;
+        let progress = subframe_us * 65536 / us_per_frame;
+        self.h += (frames / self.frame_rate as u64 / 60 / 60) as i8;
+        self.m += (frames / self.frame_rate as u64 / 60 % 60) as i8;
+        self.s += (frames / self.frame_rate as u64 % 60) as i8;
+        self.f += (frames % self.frame_rate as u64) as i8;
+        self.add_progress(progress.try_into().unwrap_or_default());
     }
     /// Subtract an amount of microseconds from this timestamp.
     pub fn sub_us(&mut self, time_us: u64) {
@@ -108,6 +115,7 @@ impl TimecodeInstant {
         self.m = m as i8;
         self.s = s as i8;
         self.f = f as i8;
+        self.frame_progress = 0;
     }
 
     // propagate changes to f into the other values
@@ -143,11 +151,34 @@ mod tests {
     #[test]
     fn add_sub_identity() {
         let time_const = TimecodeInstant::new(25);
-        for i in (0..36000 * 1000000).step_by(123456) {
+        for i in (0..36000 * 1000000).step_by(12345678) {
             let mut time = time_const;
             time.add_us(i);
             time.sub_us(i);
             assert_eq!(time, time_const, "Failed with {}us ({} s)", i, i / 1000000);
         }
+    }
+
+    #[test]
+    fn add_us() {
+        const US_PER_FRAME: u64 = 1_000_000 / 25;
+        let mut time = TimecodeInstant::new(25);
+        time.add_us(US_PER_FRAME);
+        assert_eq!(time.f, 1);
+        assert_eq!(time.frame_progress, 0);
+        time.add_us(US_PER_FRAME * 26);
+        assert_eq!(time.f, 2);
+        assert_eq!(time.s, 1);
+        assert_eq!(time.frame_progress, 0);
+        time.add_us(US_PER_FRAME / 2);
+        assert_eq!(time.f, 2);
+        assert_eq!(time.frame_progress, 65535 / 2 + 1);
+
+        time.set_time(0, 0, 0, 0);
+        time.add_us(US_PER_FRAME * 25 * 3605);
+        assert_eq!(time.h, 1);
+        assert_eq!(time.m, 0);
+        assert_eq!(time.s, 5);
+        assert_eq!(time.f, 0);
     }
 }

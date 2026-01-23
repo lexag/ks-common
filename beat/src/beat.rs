@@ -1,8 +1,6 @@
-use core::fmt;
-
 /// Beat represent a musical beat, or a subdivision thereof
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Default, PartialEq, Copy)]
+#[derive(Clone, Default, PartialEq, Copy, Debug)]
 pub struct Beat {
     /// Beat number, first beat in a bar typically has 1, followed by 2 etc. Can be between 0 and 255.
     pub count: u8,
@@ -14,15 +12,6 @@ pub struct Beat {
     /// In practice, the top speed of beat processing is limited by core performance, and a beat
     /// processing speed of 1MHz is probably unlikely.
     pub length: u32,
-}
-
-impl fmt::Debug for Beat {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Beat")
-            .field("count", &self.count)
-            .field("length", &self.length)
-            .finish()
-    }
 }
 
 impl Beat {

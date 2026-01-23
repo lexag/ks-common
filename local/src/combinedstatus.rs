@@ -1,10 +1,9 @@
 use crate::{
     audiosource::AudioSourceState, beatstate::BeatState, cuestate::CueState,
     jackstatus::JACKStatus, networkstatus::NetworkStatus, playbackstate::PlaybackState,
-    transportstate::TransportState,
+    status::TimecodeState, transportstate::TransportState,
 };
 use cue::Show;
-use mem::smpte::TimecodeInstant;
 
 /// Wrapper type for the core audio processing status.
 #[derive(Clone, Debug)]
@@ -28,7 +27,7 @@ impl Default for CombinedStatus {
         Self {
             sources: [
                 AudioSourceState::BeatStatus(BeatState::default()),
-                AudioSourceState::TimeStatus(TimecodeInstant::default()),
+                AudioSourceState::TimeStatus(TimecodeState::default()),
                 AudioSourceState::PlaybackStatus(PlaybackState::default()),
                 AudioSourceState::PlaybackStatus(PlaybackState::default()),
                 AudioSourceState::PlaybackStatus(PlaybackState::default()),
@@ -85,9 +84,9 @@ impl CombinedStatus {
         }
     }
     /// Get the timecode time state from channel 2
-    pub fn time_state(&self) -> TimecodeInstant {
+    pub fn time_state(&self) -> TimecodeState {
         if self.sources.is_empty() {
-            return TimecodeInstant::default();
+            return TimecodeState::default();
         }
         if let AudioSourceState::TimeStatus(state) = &self.sources[1] {
             *state

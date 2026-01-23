@@ -1,7 +1,7 @@
 use cue::Show;
 #[cfg(feature = "std")]
 use local::{
-    config::SystemConfiguration,
+    config::{LogItem, SystemConfiguration},
     status::{CueState, JACKStatus, NetworkStatus},
 };
 use mem::typeflags::MessageType;
@@ -26,6 +26,8 @@ pub enum LargeMessage {
     /// System configuration has changed. Sent (to all subscribers) as a response to a
     /// ChangeSystemConfiguration request. Also sent on startup
     ConfigurationChanged(SystemConfiguration),
+    /// A log entry was written
+    Log(LogItem),
 }
 
 #[cfg(feature = "std")]
@@ -34,6 +36,7 @@ impl LargeMessage {
     pub fn to_type(&self) -> MessageType {
         match self {
             Self::CueData(..) => MessageType::CueData,
+            Self::Log(..) => MessageType::Log,
             Self::ShowData(..) => MessageType::ShowData,
             Self::NetworkChanged(..) => MessageType::NetworkChanged,
             Self::JACKStateChanged(..) => MessageType::JACKStateChanged,
