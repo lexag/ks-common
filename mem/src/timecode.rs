@@ -2,7 +2,7 @@ use core::fmt::{Display, Formatter, Result};
 
 /// SMPTE timecode properties
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
 pub struct TimecodeProperties {
     /// Frame numbers 0 and 1 are skipped during the first second of every minute, except multiples
     /// of 10 minutes. This converts 30 frames/second time code to the 29.97 frames/second NTSC
@@ -27,7 +27,7 @@ pub struct TimecodeProperties {
 /// SMPTE BFG, binary group flag.
 /// Indicates the format of user bits
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, Clone, Copy, Eq, PartialEq)]
+#[derive(Default, Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
 pub enum TimecodeUserBitFormat {
     /// No (or unspecified) format
     #[default]
