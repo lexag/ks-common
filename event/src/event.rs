@@ -229,6 +229,7 @@ pub enum EventDescription {
     },
 
     /// Marker for overriding beat counts during beat renumbering
+    /// Renumbering will continue from this point
     BeatCountOverride {
         /// New beat count
         count: u8,
