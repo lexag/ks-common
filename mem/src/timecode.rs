@@ -1,5 +1,45 @@
 use core::fmt::{Display, Formatter, Result};
 
+/// SMPTE timecode properties
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Default, Debug, Clone, Copy, Eq, PartialEq)]
+pub struct TimecodeProperties {
+    /// Frame numbers 0 and 1 are skipped during the first second of every minute, except multiples
+    /// of 10 minutes. This converts 30 frames/second time code to the 29.97 frames/second NTSC
+    /// standard. (from Wikipedia, "Linear timecode")
+    pub drop_frame: bool,
+    /// Set to 1 if the time code is synchronized to a color video signal. The frame number modulo
+    /// 2 (for NTSC and SECAM) or modulo 4 (for PAL) should be preserved across cuts in order to
+    /// avoid phase jumps in the chrominance subcarrier. (from Wikipedia, "Linear timecode")
+    pub color_framing: bool,
+    /// Binary group flag; user bit format
+    pub user_bit_format: TimecodeUserBitFormat,
+    /// Indicates that the time code is synchronized to an external clock. False indicates the time
+    /// origin is arbitrary. In practice, this means "ignore the timestamp in an LTC event, and run
+    /// LTC from device time instead".
+    pub use_wall_time: bool,
+    /// 32 user bits
+    pub user_bits: [u8; 4],
+    /// Frame number offset
+    pub frame_offset: u8,
+}
+
+/// SMPTE BFG, binary group flag.
+/// Indicates the format of user bits
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Default, Debug, Clone, Copy, Eq, PartialEq)]
+pub enum TimecodeUserBitFormat {
+    /// No (or unspecified) format
+    #[default]
+    Unspecified = 0,
+    /// Date and timezone, according to SMPTE 309M
+    DateTimezone = 1,
+    /// Four 8-bit characters, transmitted little-endian
+    EightBitLittleEndian = 2,
+    /// Reserved and unused
+    Reserved11 = 3,
+}
+
 /// A SMPTE LTC timestamp, including frame rate.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, Clone, Copy, Eq)]
