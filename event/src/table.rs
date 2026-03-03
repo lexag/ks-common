@@ -86,7 +86,7 @@ impl EventTable {
     }
 
     /// Get all events located at the given beat
-    pub fn get_at_location(&mut self, location: u16) -> Vec<Event> {
+    pub fn get_at_location(&self, location: u16) -> Vec<Event> {
         self.table
             .iter()
             .filter(|&e| e.location == location)
@@ -110,6 +110,16 @@ impl EventTable {
             idx += 1;
         }
         idx
+    }
+
+    /// Get an immutable iterator over all events in this table
+    pub fn iter(&self) -> impl Iterator<Item = &Event> {
+        self.table.iter()
+    }
+
+    /// Get a mutable iterator over all events in this table
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Event> {
+        self.table.iter_mut()
     }
 }
 
