@@ -2,7 +2,7 @@ use cue::Show;
 #[cfg(feature = "std")]
 use local::{
     config::{LogItem, SystemConfiguration},
-    status::{CueState, JACKStatus, NetworkStatus},
+    status::{CueState, JACKStatus, NetworkStatus, PlaybackHandlerStatus},
 };
 use mem::typeflags::MessageType;
 
@@ -43,6 +43,7 @@ impl LargeMessage {
             Self::NetworkChanged(..) => MessageType::NetworkChanged,
             Self::JACKStateChanged(..) => MessageType::JACKStateChanged,
             Self::ConfigurationChanged(..) => MessageType::ConfigurationChanged,
+            Self::PlaybackHandlerChanged(..) => MessageType::PlaybackHandlerChanged,
         }
     }
 }

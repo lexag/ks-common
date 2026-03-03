@@ -1,4 +1,5 @@
 /// State of audio playback channel
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, Default, Copy)]
 pub struct PlaybackState {
     /// Channel index

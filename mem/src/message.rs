@@ -31,6 +31,8 @@ bitflags::bitflags! {
         const EventOccured = 0x200;
         /// Log occured
         const Log = 0x1000;
+        /// Playback handler status changed
+        const PlaybackHandlerChanged = 0x4000;
     }
 }
 
