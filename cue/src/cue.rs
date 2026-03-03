@@ -223,6 +223,10 @@ impl Cue {
                             / length as f32;
                         beats_left_in_change = length;
                     }
+                    Some(EventDescription::BeatLengthOverride { length }) => {
+                        beat.length = length;
+                        break;
+                    }
 
                     _ => {}
                 }
