@@ -4,11 +4,11 @@ use core::fmt::{Display, Formatter, Result};
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
 pub struct TimecodeProperties {
-    /// Frame numbers 0 and 1 are skipped during the first second of every minute, except multiples
+    /// If set to true, frame numbers 0 and 1 are skipped during the first second of every minute, except multiples
     /// of 10 minutes. This converts 30 frames/second time code to the 29.97 frames/second NTSC
     /// standard. (from Wikipedia, "Linear timecode")
     pub drop_frame: bool,
-    /// Set to 1 if the time code is synchronized to a color video signal. The frame number modulo
+    /// Set to true if the time code is synchronized to a color video signal. The frame number modulo
     /// 2 (for NTSC and SECAM) or modulo 4 (for PAL) should be preserved across cuts in order to
     /// avoid phase jumps in the chrominance subcarrier. (from Wikipedia, "Linear timecode")
     pub color_framing: bool,
