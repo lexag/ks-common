@@ -28,6 +28,8 @@ pub enum LargeMessage {
     ConfigurationChanged(SystemConfiguration),
     /// A log entry was written
     Log(LogItem),
+    /// Playback handler loaded new clips
+    PlaybackHandlerChanged(PlaybackHandlerStatus),
 }
 
 #[cfg(feature = "std")]
