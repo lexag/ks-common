@@ -106,6 +106,7 @@ mod tests {
                             f: 0,
                             frame_progress: 0,
                         },
+                        properties: mem::smpte::TimecodeProperties::default(),
                     }),
                 },
             );

@@ -23,4 +23,6 @@ pub mod time;
 /// Low level data types for SMPTE Timecode
 pub mod smpte {
     pub use super::timecode::TimecodeInstant;
+    pub use super::timecode::TimecodeProperties;
+    pub use super::timecode::TimecodeUserBitFormat;
 }

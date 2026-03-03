@@ -1,5 +1,8 @@
 use core::fmt;
-use mem::{smpte::TimecodeInstant, str::StaticString};
+use mem::{
+    smpte::{TimecodeInstant, TimecodeProperties},
+    str::StaticString,
+};
 
 /// Conditional VLT requirement to perform a [EventDescription::JumpEvent].
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -204,6 +207,8 @@ pub enum EventDescription {
     TimecodeEvent {
         /// Timecode Instant this LTC starts at
         time: TimecodeInstant,
+        /// Timecode properties
+        properties: TimecodeProperties,
     },
 
     /// Marks the point where SMPTE LTC should stop running
