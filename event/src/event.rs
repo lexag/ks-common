@@ -251,6 +251,8 @@ impl EventDescription {
             EventDescription::TimecodeStopEvent => "Timecode Stop",
             EventDescription::RehearsalMarkEvent { .. } => "Rehearsal Mark",
             EventDescription::PauseEvent { .. } => "Pause Event",
+            EventDescription::BeatCountOverride { .. } => "Beat count override mark",
+            EventDescription::BeatLengthOverride { .. } => "Beat length override mark",
         }
     }
 }
