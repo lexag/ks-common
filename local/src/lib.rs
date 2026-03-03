@@ -17,6 +17,7 @@ mod logitem;
 mod metronomeconfig;
 #[cfg(feature = "std")]
 mod networkstatus;
+mod playbackhandlerstatus;
 mod playbackstate;
 mod smallcuestate;
 mod systemconfig;
@@ -59,6 +60,7 @@ pub mod status {
     pub use super::jackstatus::JACKStatus;
     #[cfg(feature = "std")]
     pub use super::networkstatus::NetworkStatus;
+    pub use super::playbackhandlerstatus::PlaybackHandlerStatus;
     pub use super::playbackstate::PlaybackState;
     pub use super::smallcuestate::SmallCueState;
     pub use super::timecodestate::TimecodeState;

@@ -7,6 +7,8 @@ bitflags::bitflags! {
         const TransportData = 0x01;
         /// Transport changed
         const TimecodeData = 0x800;
+        /// Playback data changed
+        const PlaybackData = 0x2000;
         /// Beat changed
         const BeatData = 0x02;
         /// Cue changed (lightweight)
@@ -29,6 +31,8 @@ bitflags::bitflags! {
         const EventOccured = 0x200;
         /// Log occured
         const Log = 0x1000;
+        /// Playback handler status changed
+        const PlaybackHandlerChanged = 0x4000;
     }
 }
 
