@@ -1,4 +1,5 @@
 use crate::request::command::ControlAction;
+use event::EventDescription;
 use local::config::SystemConfigurationChange;
 use mem::{
     network::{ConnectionInfo, SubscriberInfo},
@@ -35,6 +36,8 @@ pub enum Request {
     /// Notify the core that this client still is alive and connected.
     /// The core will forget clients which it has not heard from for some time.
     Ping,
+    /// Request that all devices process the given event as if it just occured in the cue
+    RunEvent(EventDescription),
 }
 
 impl Request {
@@ -50,6 +53,7 @@ impl Request {
             Self::Unsubscribe(..) => RequestType::Unsubscribe,
             Self::ChangeConfiguration(..) => RequestType::SetConfiguration,
             Self::Ping => RequestType::Ping,
+            Self::RunEvent(..) => RequestType::RunEvent,
         }
     }
 }
