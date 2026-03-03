@@ -93,6 +93,24 @@ impl EventTable {
             .copied()
             .collect()
     }
+
+    /// Shift events at beat >= X later by Y beats
+    pub fn shift_events(&mut self, start_location: u16, change: i16) {
+        let breakpoint_idx = self.idx_of_location(start_location);
+        for event in &mut self.table[breakpoint_idx as usize..] {
+            event.location = (event.location as i16).saturating_add(change).max(0) as u16
+        }
+    }
+
+    /// Get index in table of a beat location, or of the closest larger beat
+    /// location if no event occurs on the given location
+    fn idx_of_location(&self, location: u16) -> u8 {
+        let mut idx = 0;
+        while let Some (event) = self.get(idx) && event.location < location {
+            idx += 1;
+        }
+        idx
+    }
 }
 
 #[cfg(test)]
