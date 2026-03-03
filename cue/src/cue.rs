@@ -159,14 +159,27 @@ impl Cue {
             return;
         }
         let mut bar = if self.beats[0].bar_number == 0 { 0 } else { 1 };
-        let mut count = 1u16;
+        let mut count = 1u8;
         let mut prev_bar = bar;
-        for beat in &mut self.beats {
+        for (i, beat) in &mut self.beats.iter_mut().enumerate() {
             if beat.is_null() {
                 break;
             }
 
-            if prev_bar != beat.bar_number || (beat.count == 1 && prev_bar > 1) {
+            let mut overwrite = false;
+            for event in self.events.get_at_location(i as u16) {
+                if let Some(EventDescription::BeatCountOverride {
+                    count: c,
+                    bar_number: bn,
+                }) = event.event
+                {
+                    count = c;
+                    bar = bn;
+                    overwrite = true;
+                }
+            }
+
+            if !overwrite && (prev_bar != beat.bar_number || (beat.count == 1 && prev_bar > 1)) {
                 count = 1;
                 bar += 1;
             }
@@ -174,7 +187,7 @@ impl Cue {
             prev_bar = beat.bar_number;
 
             beat.bar_number = bar;
-            beat.count = count as u8;
+            beat.count = count;
 
             count += 1;
         }
@@ -209,6 +222,10 @@ impl Cue {
                             - 60000000.0 / start_tempo as f32)
                             / length as f32;
                         beats_left_in_change = length;
+                    }
+                    Some(EventDescription::BeatLengthOverride { length }) => {
+                        beat.length = length;
+                        break;
                     }
 
                     _ => {}
