@@ -221,6 +221,21 @@ pub enum EventDescription {
         /// What to do after pausing
         behaviour: PauseEventBehaviour,
     },
+
+    /// Marker for overriding beat lengths during beat length recalculation
+    BeatLengthOverride {
+        /// New length in us
+        length: u32,
+    },
+
+    /// Marker for overriding beat counts during beat renumbering
+    /// Renumbering will continue from this point
+    BeatCountOverride {
+        /// New beat count
+        count: u8,
+        /// New bar number
+        bar_number: u8,
+    },
 }
 
 impl EventDescription {
@@ -236,6 +251,8 @@ impl EventDescription {
             EventDescription::TimecodeStopEvent => "Timecode Stop",
             EventDescription::RehearsalMarkEvent { .. } => "Rehearsal Mark",
             EventDescription::PauseEvent { .. } => "Pause Event",
+            EventDescription::BeatCountOverride { .. } => "Beat count override mark",
+            EventDescription::BeatLengthOverride { .. } => "Beat length override mark",
         }
     }
 }
