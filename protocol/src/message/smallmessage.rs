@@ -1,6 +1,6 @@
 use crate::message::heartbeat::Heartbeat;
 use event::EventDescription;
-use local::status::{BeatState, SmallCueState, TimecodeState, TransportState};
+use local::status::{BeatState, PlaybackState, SmallCueState, TimecodeState, TransportState};
 use mem::typeflags::MessageType;
 
 /// Definition of small messages sent from core to client.
@@ -23,10 +23,13 @@ pub enum SmallMessage {
     /// Sent every few seconds to all clients, reporting core status and making sure the connection
     /// is alive
     Heartbeat(Heartbeat),
-    /// A playback timeline event just occured
+    /// An event just occured
     EventOccured(EventDescription),
     /// SMPTE Timecode status has changed. Sent once every SMPTE frame
     TimecodeData(TimecodeState),
+    /// State of an audio playback device just changed. Sent once per playback channel every JACK
+    /// frame
+    PlaybackData(PlaybackState),
 }
 
 impl SmallMessage {
@@ -40,6 +43,7 @@ impl SmallMessage {
             Self::EventOccured(..) => MessageType::EventOccured,
             Self::CueData(..) => MessageType::SmallCueData,
             Self::TimecodeData(..) => MessageType::TimecodeData,
+            Self::PlaybackData(..) => MessageType::PlaybackData,
         }
     }
 }
