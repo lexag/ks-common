@@ -1,6 +1,7 @@
 use core::fmt;
 use core::result;
 
+use event::EventDescription;
 use event::JumpModeChange;
 
 /// Actions contained in a ControlAction request, representing actions on the core that can be
@@ -47,6 +48,8 @@ pub enum ControlAction {
     /// A playrate different from 100% (0x0064) will currently disable audio and LTC playback, and
     /// only run the metronome
     ChangePlayrate(u16),
+    /// Request that all devices process the given event as if it just occured in the cue
+    RunEvent(EventDescription),
 }
 
 impl fmt::Display for ControlAction {
@@ -66,6 +69,7 @@ impl fmt::Display for ControlAction {
             ControlAction::SetChannelMute(..) => write!(f, "SetChannelMute"),
             ControlAction::ChangeJumpMode(..) => write!(f, "ChangeJumpMode"),
             ControlAction::ChangePlayrate(..) => write!(f, "ChangePlayrate"),
+            ControlAction::RunEvent(..) => write!(f, "RunEvent"),
         }
     }
 }
