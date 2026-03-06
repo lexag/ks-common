@@ -1,7 +1,12 @@
 use crate::{
-    audiosource::AudioSourceState, beatstate::BeatState, cuestate::CueState,
-    jackstatus::JACKStatus, networkstatus::NetworkStatus, playbackstate::PlaybackState,
-    status::TimecodeState, transportstate::TransportState,
+    audiosource::AudioSourceState,
+    beatstate::BeatState,
+    cuestate::CueState,
+    jackstatus::JACKStatus,
+    networkstatus::NetworkStatus,
+    playbackstate::PlaybackState,
+    status::{PlaybackHandlerStatus, TimecodeState},
+    transportstate::TransportState,
 };
 use cue::Show;
 
@@ -20,6 +25,8 @@ pub struct CombinedStatus {
     pub network_status: NetworkStatus,
     /// JACK audio server-client status
     pub jack_status: JACKStatus,
+    /// Playback handler clip status
+    pub playback_status: PlaybackHandlerStatus,
 }
 
 impl Default for CombinedStatus {
@@ -64,6 +71,7 @@ impl Default for CombinedStatus {
             show: Show::default(),
             network_status: NetworkStatus::default(),
             jack_status: JACKStatus::default(),
+            playback_status: PlaybackHandlerStatus::default(),
         }
     }
 }
