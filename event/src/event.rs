@@ -6,9 +6,10 @@ use mem::{
 
 /// Conditional VLT requirement to perform a [EventDescription::JumpEvent].
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, PartialEq, Debug, PartialOrd, Ord, Eq, Copy)]
+#[derive(Clone, PartialEq, Debug, PartialOrd, Ord, Eq, Copy, Default)]
 pub enum JumpRequirement {
     /// VLT must be on
+    #[default]
     JumpModeOn,
     /// VLT must be off
     JumpModeOff,
@@ -65,10 +66,11 @@ impl JumpModeChange {
 
 /// When pausing from a PauseEvent, what action to take to prepare for playback again
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, PartialEq, Debug, PartialOrd, Ord, Eq, Copy)]
+#[derive(Clone, PartialEq, Debug, PartialOrd, Ord, Eq, Copy, Default)]
 pub enum PauseEventBehaviour {
     /// Pause and do nothing. Playback will resume exactly where stopped, which may have been in
     /// the middle of a beat.
+    #[default]
     Hold,
     /// Move back to the beginning of the beat where the pause happened. Will always resume in time.
     RestartBeat,
@@ -162,12 +164,16 @@ pub enum EventDescription {
     /// Can be conditional with [JumpRequirement] and can conditionally change VLT state with [JumpModeChange]
     JumpEvent {
         /// Beat idx to jump to
+        #[cfg_attr(feature = "serde", serde(default))]
         destination: u16,
         /// Conditional VLT requirement required to jump
+        #[cfg_attr(feature = "serde", serde(default))]
         requirement: JumpRequirement,
         /// When jumping, should VLT change?
+        #[cfg_attr(feature = "serde", serde(default))]
         when_jumped: JumpModeChange,
         /// When passing without jumping, should VLT change?
+        #[cfg_attr(feature = "serde", serde(default))]
         when_passed: JumpModeChange,
     },
 
@@ -175,39 +181,49 @@ pub enum EventDescription {
     /// length property, but used for editing and recalculating tempo
     TempoChangeEvent {
         /// New tempo in BPM
+        #[cfg_attr(feature = "serde", serde(default))]
         tempo: u16,
     },
     /// Marks a gradual tempo change. Cosmetic during playback, as tempo comes from each beat's
     /// length property, but used for editing and recalculating tempo
     GradualTempoChangeEvent {
         /// Old tempo (ramp start tempo) in BPM
+        #[cfg_attr(feature = "serde", serde(default))]
         start_tempo: u16,
         /// New tempo (ramp end tempo) in BPM
+        #[cfg_attr(feature = "serde", serde(default))]
         end_tempo: u16,
         /// Length of tempo ramp in beats
+        #[cfg_attr(feature = "serde", serde(default))]
         length: u16,
     },
 
     /// When triggered: start playing a clip on a playback channel
     PlaybackEvent {
         /// Clip start offset in samples
+        #[cfg_attr(feature = "serde", serde(default))]
         sample: i32,
         /// targeted playback channel
+        #[cfg_attr(feature = "serde", serde(default))]
         channel_idx: u16,
         /// playback clip idx
+        #[cfg_attr(feature = "serde", serde(default))]
         clip_idx: u16,
     },
     /// When triggered: stop playback on a channel
     PlaybackStopEvent {
         /// Targeted playback channel
+        #[cfg_attr(feature = "serde", serde(default))]
         channel_idx: u16,
     },
 
     /// Marks an SMPTE LTC timestamp
     TimecodeEvent {
         /// Timecode Instant this LTC starts at
+        #[cfg_attr(feature = "serde", serde(default))]
         time: TimecodeInstant,
         /// Timecode properties
+        #[cfg_attr(feature = "serde", serde(default))]
         properties: TimecodeProperties,
     },
 
@@ -218,18 +234,21 @@ pub enum EventDescription {
     RehearsalMarkEvent {
         /// Rehearsal mark label
         /// Can be empty.
+        #[cfg_attr(feature = "serde", serde(default))]
         label: StaticString<8>,
     },
 
     /// When triggered: pause transport, and execute the PauseEventBehaviour.
     PauseEvent {
         /// What to do after pausing
+        #[cfg_attr(feature = "serde", serde(default))]
         behaviour: PauseEventBehaviour,
     },
 
     /// Marker for overriding beat lengths during beat length recalculation
     BeatLengthOverride {
         /// New length in us
+        #[cfg_attr(feature = "serde", serde(default))]
         length: u32,
     },
 
@@ -237,8 +256,10 @@ pub enum EventDescription {
     /// Renumbering will continue from this point
     BeatCountOverride {
         /// New beat count
+        #[cfg_attr(feature = "serde", serde(default))]
         count: u8,
         /// New bar number
+        #[cfg_attr(feature = "serde", serde(default))]
         bar_number: u8,
     },
 }
