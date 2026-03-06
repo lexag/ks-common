@@ -15,3 +15,13 @@ pub struct PlaybackState {
     /// Clip length in samples
     pub clip_length: u32,
 }
+
+impl PlaybackState {
+    /// Initialize a PlaybackState with the given channel index
+    pub fn new(channel: u8) -> Self {
+        Self {
+            channel,
+            ..Default::default()
+        }
+    }
+}
