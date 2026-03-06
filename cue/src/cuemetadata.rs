@@ -4,6 +4,7 @@ use mem::str::StaticString;
 /// playback-data such as beats and events. As a rule, everything that someone not familiar with
 /// ClicKS inner working may want to know should be in metadata
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(default))]
 #[derive(Clone, Debug, Default, PartialEq, Copy)]
 pub struct CueMetadata {
     /// Name of the cue, usually a song name or description of what happens on stage

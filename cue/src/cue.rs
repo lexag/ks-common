@@ -9,6 +9,7 @@ use std::vec::Vec;
 /// with a clearly defined start and end, which may be followed or preceded by other cues.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
+#[serde(default)]
 pub struct Cue {
     /// Metadata for this cue
     pub metadata: CueMetadata,
