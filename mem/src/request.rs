@@ -19,4 +19,6 @@ pub enum RequestType {
     SetConfiguration,
     /// This request is a Ping request.
     Ping,
+    /// This request is a RunEvent request.
+    RunEvent,
 }

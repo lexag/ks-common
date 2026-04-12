@@ -86,12 +86,40 @@ impl EventTable {
     }
 
     /// Get all events located at the given beat
-    pub fn get_at_location(&mut self, location: u16) -> Vec<Event> {
+    pub fn get_at_location(&self, location: u16) -> Vec<Event> {
         self.table
             .iter()
             .filter(|&e| e.location == location)
             .copied()
             .collect()
+    }
+
+    /// Shift events at beat >= X later by Y beats
+    pub fn shift_events(&mut self, start_location: u16, change: i16) {
+        let breakpoint_idx = self.idx_of_location(start_location);
+        for event in &mut self.table[breakpoint_idx as usize..] {
+            event.location = (event.location as i16).saturating_add(change).max(0) as u16
+        }
+    }
+
+    /// Get index in table of a beat location, or of the closest larger beat
+    /// location if no event occurs on the given location
+    fn idx_of_location(&self, location: u16) -> u8 {
+        let mut idx = 0;
+        while let Some (event) = self.get(idx) && event.location < location {
+            idx += 1;
+        }
+        idx
+    }
+
+    /// Get an immutable iterator over all events in this table
+    pub fn iter(&self) -> impl Iterator<Item = &Event> {
+        self.table.iter()
+    }
+
+    /// Get a mutable iterator over all events in this table
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Event> {
+        self.table.iter_mut()
     }
 }
 
