@@ -1,8 +1,5 @@
 use core::fmt;
-use ks_common_generic::{
-    smpte::{TimecodeInstant, TimecodeProperties},
-    str::StaticString,
-};
+use ks_common_generic::{smpte::Timecode, str::StaticString};
 
 /// Conditional VLT requirement to perform a [EventDescription::JumpEvent].
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -221,10 +218,7 @@ pub enum EventDescription {
     TimecodeEvent {
         /// Timecode Instant this LTC starts at
         #[cfg_attr(feature = "serde", serde(default))]
-        time: TimecodeInstant,
-        /// Timecode properties
-        #[cfg_attr(feature = "serde", serde(default))]
-        properties: TimecodeProperties,
+        time: Timecode,
     },
 
     /// Marks the point where SMPTE LTC should stop running

@@ -1,15 +1,20 @@
-use beat::Beat;
-use event::{Event, EventDescription, EventTable, JumpModeChange, JumpRequirement};
+use crate::{
+    beat::Beat,
+    cue::CueMetadata,
+    event::{Event, EventDescription, EventTable, JumpModeChange, JumpRequirement},
+};
 
 extern crate std;
-use crate::CueMetadata;
 use std::vec::Vec;
 
 /// A Cue represents a musical or technical "cue", in the meaning semi-linear timeline progression
 /// with a clearly defined start and end, which may be followed or preceded by other cues.
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Serialize, serde::Deserialize),
+    serde(default)
+)]
 #[derive(Clone, Debug, PartialEq)]
-#[serde(default)]
 pub struct Cue {
     /// Metadata for this cue
     pub metadata: CueMetadata,

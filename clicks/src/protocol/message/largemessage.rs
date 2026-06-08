@@ -1,6 +1,6 @@
-use cue::Show;
+use crate::cue::Show;
 #[cfg(feature = "std")]
-use local::{
+use crate::local::{
     config::{LogItem, SystemConfiguration},
     status::{CueState, JACKStatus, NetworkStatus, PlaybackHandlerStatus},
 };

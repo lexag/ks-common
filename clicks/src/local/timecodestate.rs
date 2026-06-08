@@ -1,4 +1,4 @@
-use ks_common_generic::smpte::TimecodeInstant;
+use ks_common_generic::smpte::Timecode;
 
 /// Status of current SMPTE timecode frame
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -7,5 +7,5 @@ pub struct TimecodeState {
     /// Is timecode currently running, i.e. is timestamp changing?
     pub running: bool,
     /// current LTC timestamp
-    pub ltc: TimecodeInstant,
+    pub ltc: Timecode,
 }

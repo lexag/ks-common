@@ -141,23 +141,24 @@ impl<const L: usize> StaticString<L> {
         };
 
         // cut down until smaller than i32
-        if let Ok(ival) = value.try_into() {
-            let neg = ival < 0;
-            let mut val: i128 = ival.abs();
-            let mut extra_digits = 0;
-            while val > i32::MAX as i128 {
-                val /= 10;
-                extra_digits += 1;
-            }
+        value.try_into().map_or_else(
+            |_| Self::empty(),
+            |ival| {
+                let neg = ival < 0;
+                let mut val: i128 = ival.abs();
+                let mut extra_digits = 0;
+                while val > i32::MAX as i128 {
+                    val /= 10;
+                    extra_digits += 1;
+                }
 
-            Self::write_as_exponent(
-                neg,
-                Self::top_digit_int(val as i32),
-                Self::len_of_int(val as i32) + extra_digits - 1,
-            )
-        } else {
-            Self::empty()
-        }
+                Self::write_as_exponent(
+                    neg,
+                    Self::top_digit_int(val as i32),
+                    Self::len_of_int(val as i32) + extra_digits - 1,
+                )
+            },
+        )
     }
 
     fn top_digit_int(val: i32) -> i32 {
@@ -304,7 +305,11 @@ impl<'de, const L: usize> serde::Deserialize<'de> for StaticString<L> {
             type Value = StaticString<L>;
 
             fn expecting(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-                write!(f, "a u8 string buffer of exactly {} bytes OR a human-readable string {} bytes or shorter", L, L)
+                write!(
+                    f,
+                    "a u8 string buffer of exactly {} bytes OR a human-readable string {} bytes or shorter",
+                    L, L
+                )
             }
 
             fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>

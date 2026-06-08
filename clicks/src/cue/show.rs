@@ -9,8 +9,11 @@ use std::vec::Vec;
 
 /// A Show represents a collection of Cues for semi-linear sequential playback
 #[cfg(feature = "std")]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[serde(default)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Serialize, serde::Deserialize),
+    serde(default)
+)]
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct Show {
     /// Metadata for this show

@@ -1,4 +1,4 @@
-use crate::message::{LargeMessage, SmallMessage};
+use crate::protocol::message::{LargeMessage, SmallMessage};
 use ks_common_generic::typeflags::MessageType;
 
 /// Wrapper type for both types of core -> client messages

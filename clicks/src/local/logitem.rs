@@ -1,4 +1,4 @@
-use crate::config::{LogContext, LogKind};
+use crate::local::config::{LogContext, LogKind};
 
 extern crate std;
 
