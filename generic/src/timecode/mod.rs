@@ -222,6 +222,23 @@ impl Ord for Timecode {
     }
 }
 
+impl Default for Timecode {
+    fn default() -> Self {
+        Self {
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+            frames: 0,
+            frame_rate: FrameRateInfo {
+                drop_frame: false,
+                fps: 25,
+            },
+            user_bits: 0,
+            frame_count_cache: 0,
+        }
+    }
+}
+
 impl Timecode {
     /// Compute total frames from midnight from the component fields.
     /// This is the canonical calculation used by the constructor and cache.
