@@ -1,6 +1,10 @@
 [workspace]
 resolver = "3"
-members = ["beat", "common", "cue", "event", "mem", "protocol", "local"]
+members = ["clicks", "generic"]
+
+[workspace.package]
+version = "2.2.0"
+edition = "2024"
 
 [workspace.lints.clippy]
 branches_sharing_code = "warn"
