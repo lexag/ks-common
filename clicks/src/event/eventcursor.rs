@@ -1,5 +1,5 @@
 use crate::event::Event;
-use crate::table::EventTable;
+use crate::event::table::EventTable;
 
 /// Assisting pointer type that indexes into an [EventTable] and points at a specific event.
 /// Implements functionality to seek and step through events in order.
@@ -89,6 +89,7 @@ impl<'a> EventCursor<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ks_common_generic::smpte::Timecode;
 
     fn make_dummy_table() -> EventTable {
         let mut c = EventTable::empty();
@@ -98,15 +99,8 @@ mod tests {
                 Event {
                     location: i as u16 * 2,
                     event: Some(crate::event::EventDescription::TimecodeEvent {
-                        time: mem::smpte::TimecodeInstant {
-                            frame_rate: 25,
-                            h: 0,
-                            m: 0,
-                            s: 0,
-                            f: 0,
-                            frame_progress: 0,
-                        },
-                        properties: mem::smpte::TimecodeProperties::default(),
+                        time: Timecode::new(0, 0, 0, 0, ks_common_generic::smpte::FrameRate::Fps25)
+                            .unwrap(),
                     }),
                 },
             );

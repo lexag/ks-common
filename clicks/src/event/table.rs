@@ -18,21 +18,13 @@ impl EventTable {
     /// Get the event at idx, returning a null-event if idx is out of bounds.
     pub fn get(&self, idx: u8) -> Option<Event> {
         let e = self.table.get(idx as usize)?;
-        if e.is_null() {
-            None
-        } else {
-            Some(*e)
-        }
+        if e.is_null() { None } else { Some(*e) }
     }
 
     /// Get a mut ref to the event at idx, returning a null-event if idx is out of bounds.
     pub fn get_mut(&mut self, idx: u8) -> Option<&mut Event> {
         let e = self.table.get_mut(idx as usize)?;
-        if e.is_null() {
-            None
-        } else {
-            Some(e)
-        }
+        if e.is_null() { None } else { Some(e) }
     }
 
     /// Set the event value at idx.
@@ -106,7 +98,9 @@ impl EventTable {
     /// location if no event occurs on the given location
     fn idx_of_location(&self, location: u16) -> u8 {
         let mut idx = 0;
-        while let Some (event) = self.get(idx) && event.location < location {
+        while let Some(event) = self.get(idx)
+            && event.location < location
+        {
             idx += 1;
         }
         idx
@@ -126,14 +120,15 @@ impl EventTable {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::event::EventDescription;
 
     #[test]
     fn test_sort() {
         let mut t = EventTable::empty();
-        t.push(Event::new(12, crate::EventDescription::TimecodeStopEvent));
-        t.push(Event::new(10, crate::EventDescription::TimecodeStopEvent));
-        t.push(Event::new(4, crate::EventDescription::TimecodeStopEvent));
-        t.push(Event::new(16, crate::EventDescription::TimecodeStopEvent));
+        t.push(Event::new(12, EventDescription::TimecodeStopEvent));
+        t.push(Event::new(10, EventDescription::TimecodeStopEvent));
+        t.push(Event::new(4, EventDescription::TimecodeStopEvent));
+        t.push(Event::new(16, EventDescription::TimecodeStopEvent));
         assert_eq!(t.get(0).expect("").location, 4);
         assert_eq!(t.get(1).expect("").location, 10);
         assert_eq!(t.get(2).expect("").location, 12);

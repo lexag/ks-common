@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 #[cfg(feature = "std")]
-use crate::show::Show;
+use crate::cue::show::Show;
 
 #[cfg(feature = "serde")]
 extern crate serde;

@@ -39,12 +39,6 @@ mod tests {
         print_size_of!(crate::local::status::NetworkStatus);
         print_size_of!(crate::local::status::PlaybackState);
         print_size_of!(crate::local::status::TransportState);
-        print_size_of!(crate::mem::network::ConnectionInfo);
-        print_size_of!(crate::mem::network::IpAddress);
-        print_size_of!(crate::mem::network::SubscriberInfo);
-        print_size_of!(crate::mem::smpte::TimecodeInstant);
-        print_size_of!(crate::mem::str::StaticString<8>);
-        print_size_of!(crate::mem::typeflags::MessageType);
         print_size_of!(crate::protocol::message::Heartbeat);
         print_size_of!(crate::protocol::message::LargeMessage);
         print_size_of!(crate::protocol::message::SmallMessage);
