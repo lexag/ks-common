@@ -638,6 +638,26 @@ impl core::ops::Add<u32> for Timecode {
     }
 }
 
+impl core::ops::Add<TimecodeOffset> for Timecode {
+    type Output = Result<Self, TimecodeError>;
+
+    fn add(self, rhs: TimecodeOffset) -> Self::Output {
+        if rhs.is_negative {
+            self - rhs.abs_time
+        } else {
+            self + rhs.abs_time
+        }
+    }
+}
+
+impl core::ops::Sub<TimecodeOffset> for Timecode {
+    type Output = Result<Self, TimecodeError>;
+
+    fn sub(self, rhs: TimecodeOffset) -> Self::Output {
+        self + (-rhs)
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Display
 // ---------------------------------------------------------------------------
@@ -681,6 +701,107 @@ pub trait TimecodeWriter {
 
     /// Flush any buffered data
     fn flush(&mut self) -> Result<(), TimecodeError>;
+}
+
+// ---------------------------------------------------------------------------
+// Offset type
+// ---------------------------------------------------------------------------
+
+/// Timecode offset; delta time
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TimecodeOffset {
+    /// Absolute time length and framerate of this offset
+    pub abs_time: Timecode,
+    /// Is this offset negative, i.e. goes backward (toward 0) from a point of time?
+    pub is_negative: bool,
+}
+
+impl PartialOrd for TimecodeOffset {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for TimecodeOffset {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        if self.is_negative == other.is_negative {
+            let cmp = self.abs_time.cmp(&other.abs_time);
+            if self.is_negative { cmp.reverse() } else { cmp }
+        } else {
+            if self.is_negative {
+                core::cmp::Ordering::Less
+            } else {
+                core::cmp::Ordering::Greater
+            }
+        }
+    }
+}
+
+impl TimecodeOffset {
+    /// Create a new timecode offset
+    pub fn new(abs_time: Timecode, is_negative: bool) -> Self {
+        Self {
+            abs_time,
+            is_negative,
+        }
+    }
+
+    /// Create a new timecode offset from raw field values
+    pub fn from_raw_fields(
+        negative: bool,
+        hours: u8,
+        minutes: u8,
+        seconds: u8,
+        frames: u8,
+        frame_rate: FrameRate,
+    ) -> Result<Self, TimecodeError> {
+        Ok(Self {
+            abs_time: Timecode::new(hours, minutes, seconds, frames, frame_rate)?,
+            is_negative: negative,
+        })
+    }
+}
+
+impl core::ops::Add for TimecodeOffset {
+    type Output = Result<Self, TimecodeError>;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        if self.is_negative == rhs.is_negative {
+            Ok(Self {
+                abs_time: (self.abs_time + rhs.abs_time)?,
+                is_negative: self.is_negative,
+            })
+        } else {
+            Ok(Self {
+                abs_time: (self.abs_time.max(rhs.abs_time) - self.abs_time.min(rhs.abs_time))?,
+                is_negative: if self.abs_time > rhs.abs_time {
+                    self.is_negative
+                } else {
+                    rhs.is_negative
+                },
+            })
+        }
+    }
+}
+
+impl core::ops::Neg for TimecodeOffset {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self {
+            abs_time: self.abs_time,
+            is_negative: !self.is_negative,
+        }
+    }
+}
+
+impl core::ops::Sub for TimecodeOffset {
+    type Output = Result<Self, TimecodeError>;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        self + (-rhs)
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -920,5 +1041,87 @@ mod tests {
             drop_frame: false,
         };
         assert_eq!(frame_rate_from_info(&info_120), FrameRate::Fps120);
+    }
+
+    #[test]
+    fn test_timecode_offset_add() {
+        // Add one frame
+        assert_eq!(
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
+                + TimecodeOffset::from_raw_fields(false, 0, 0, 0, 1, FrameRate::Fps25)
+                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 1, FrameRate::Fps25)
+        );
+        // Add negative one frame
+        assert_eq!(
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
+                + TimecodeOffset::from_raw_fields(true, 0, 0, 0, 1, FrameRate::Fps25)
+                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 3, 24, FrameRate::Fps25)
+        );
+        // Add negative multiple frames
+        assert_eq!(
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
+                + TimecodeOffset::from_raw_fields(true, 0, 0, 0, 15, FrameRate::Fps25)
+                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 3, 10, FrameRate::Fps25)
+        );
+    }
+
+    #[test]
+    fn test_timecode_offset_sub() {
+        // Sub one frame
+        assert_eq!(
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
+                - TimecodeOffset::from_raw_fields(false, 0, 0, 0, 1, FrameRate::Fps25)
+                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 3, 24, FrameRate::Fps25)
+        );
+        // sub negative one frame
+        assert_eq!(
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
+                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 1, FrameRate::Fps25)
+                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 1, FrameRate::Fps25)
+        );
+        // Sub negative multiple frames
+        assert_eq!(
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
+                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 15, FrameRate::Fps25)
+                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 15, FrameRate::Fps25)
+        );
+    }
+
+    #[test]
+    fn test_timecode_offset() {
+        // Sub one frame
+        assert_eq!(
+            Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
+                - TimecodeOffset::from_raw_fields(false, 0, 0, 0, 1, FrameRate::Fps25)
+                    .expect("valid"),
+            Timecode::new(0, 0, 3, 24, FrameRate::Fps25)
+        );
+        // sub negative one frame
+        assert_eq!(
+            Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
+                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 1, FrameRate::Fps25)
+                    .expect("valid"),
+            Timecode::new(0, 0, 4, 1, FrameRate::Fps25)
+        );
+        // Sub negative multiple frames
+        assert_eq!(
+            Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
+                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 15, FrameRate::Fps25)
+                    .expect("valid"),
+            Timecode::new(0, 0, 4, 15, FrameRate::Fps25)
+        );
+        // Sub wrapping
+        assert_eq!(
+            Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
+                - TimecodeOffset::from_raw_fields(false, 0, 3, 0, 0, FrameRate::Fps25)
+                    .expect("valid"),
+            Timecode::new(23, 57, 4, 0, FrameRate::Fps25)
+        );
     }
 }
