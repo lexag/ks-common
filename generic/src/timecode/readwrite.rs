@@ -21,8 +21,8 @@ extern crate std;
 use std::vec::Vec;
 
 use crate::timecode::{
-    decoder, encoder::LtcEncoder, FrameRate, Timecode, TimecodeError, TimecodeReader,
-    TimecodeWriter,
+    FrameRate, Timecode, TimecodeError, TimecodeReader, TimecodeWriter, decoder,
+    encoder::LtcEncoder,
 };
 
 /// LTC reader configuration
@@ -206,5 +206,60 @@ mod tests {
     fn test_sync_word() {
         assert_eq!(constants::SYNC_WORD, 0x3FFD);
         assert_eq!(constants::BITS_PER_FRAME, 80);
+    }
+
+    #[test]
+    fn write_read_cycle() {
+        extern crate std;
+        let mut combinations = std::vec::Vec::new();
+        for sample_rate in [44100, 48000, 96000] {
+            for frame_rate in [
+                FrameRate::Fps24,
+                FrameRate::Fps25,
+                FrameRate::Fps2997DF,
+                FrameRate::Fps30,
+            ] {
+                combinations.push((sample_rate, frame_rate));
+            }
+        }
+
+        for (sample_rate, frame_rate) in combinations {
+            let mut writer = LtcWriter::new(LtcWriterConfig {
+                sample_rate,
+                frame_rate,
+                amplitude: 0.5,
+            });
+            let mut reader = LtcReader::new(LtcReaderConfig {
+                sample_rate,
+                frame_rate,
+                min_amplitude: 1e-3,
+                max_speed: 2.0,
+            });
+
+            let mut timecode = Timecode::new(1, 2, 3, 4, frame_rate).expect("valid");
+            let mut samples = Vec::new();
+            for _ in 0..500 {
+                samples.extend(writer.encode_frame(&timecode).expect("write"));
+                timecode.increment().unwrap();
+            }
+
+            let portions = samples.chunks(sample_rate as usize / 80);
+            let mut num_handled = 0;
+            let mut num_failed = 0;
+            for portion in portions {
+                let _ = reader.process_samples(portion).expect("read");
+                if let Ok(Some(_)) = reader.read_timecode() {
+                } else {
+                    num_failed += 1
+                }
+                num_handled += 1;
+            }
+            assert!(
+                num_failed < 10,
+                "failed {} reads of {}",
+                num_failed,
+                num_handled
+            );
+        }
     }
 }

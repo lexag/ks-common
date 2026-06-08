@@ -56,9 +56,33 @@ impl LtcEncoder {
         let bits = self.timecode_to_bits(timecode)?;
 
         // Encode bits to audio
-        let samples = self.bits_to_audio(&bits);
+        let mut samples = self.bits_to_audio(&bits);
+
+        samples = self.low_pass(samples);
 
         Ok(samples)
+    }
+
+    /// Cut down hard edges on bit borders
+    fn low_pass(&self, buf: Vec<f32>) -> Vec<f32> {
+        //for (i, s) in buf.iter().enumerate() {
+        //    println!("buf {i:03} {s}")
+        //}
+        let mut out = std::vec![0.0; buf.len()];
+        const LP_WIDTH: usize = 3;
+        for idx in 0..buf.len() {
+            let mut cumsum = 0.0;
+            for offs_idx in idx..idx + LP_WIDTH {
+                cumsum += if offs_idx < buf.len() {
+                    buf[offs_idx]
+                } else {
+                    -buf[buf.len() - 10]
+                }
+            }
+            cumsum /= LP_WIDTH as f32;
+            out[idx] = cumsum;
+        }
+        out
     }
 
     /// Convert timecode to 80-bit LTC frame
@@ -176,7 +200,7 @@ impl LtcEncoder {
 
     /// Encode sync word (0x3FFD)
     fn encode_sync_word(&self, bits: &mut [bool; BITS_PER_FRAME]) {
-        let sync_word = SYNC_WORD;
+        let sync_word = SYNC_WORD.reverse_bits();
         for i in 0..SYNC_BITS {
             bits[DATA_BITS + i] = (sync_word & (1 << i)) != 0;
         }
@@ -520,6 +544,7 @@ impl UserBitsEncoder {
     /// Encode ASCII string to user bits (8 characters max)
     pub fn encode_ascii(text: &str) -> u32 {
         let bytes = text.as_bytes();
+        std::println!("{:x?}", bytes);
         let mut user_bits = 0u32;
 
         for (i, &byte) in bytes.iter().take(4).enumerate() {
@@ -610,19 +635,68 @@ mod tests {
         let samples = encoder
             .encode_frame(&timecode)
             .expect("encode should succeed");
-        assert!(!samples.is_empty());
+        std::println!("{:?}", samples);
+    }
+
+    #[test]
+    fn test_encode_to_bits() {
+        let encoder = LtcEncoder::new(48000, FrameRate::Fps25, 0.5);
+        let timecode = Timecode::new(1, 2, 3, 4, FrameRate::Fps25).expect("valid timecode");
+        let Ok(bits) = encoder.timecode_to_bits(&timecode) else {
+            panic!("to bits failed");
+        };
+        const CORRECT: [bool; 80] = [
+            false, false, true, false, // frame units
+            false, false, false, false, // user bits 1
+            false, false, // frame tens
+            false, false, // drop frame and color frame flags
+            false, false, false, false, // user bits 2
+            //
+            true, true, false, false, // seconds units
+            false, false, false, false, // user bits 3
+            false, false, false, // seconds tens
+            true,  // polarity
+            false, false, false, false, // user bits 4
+            //
+            false, true, false, false, // minutes units
+            false, false, false, false, // user bits 5
+            false, false, false, // minutes tens
+            false, // flag
+            false, false, false, false, // user bits 6
+            //
+            true, false, false, false, // hours units
+            false, false, false, false, // user bits 7
+            false, false, // hours tens
+            false, false, // flags
+            false, false, false, false, // user bits 8
+            //
+            false, false, true, true, true, true, true, true, true, true, true, true, true, true,
+            false, true, // sync word
+        ];
+        for i in 0..80 {
+            assert_eq!(bits[i], CORRECT[i], "at bit {}", i);
+        }
     }
 
     #[test]
     fn test_user_bits_ascii() {
         let user_bits = UserBitsEncoder::encode_ascii("TEST");
-        assert_ne!(user_bits, 0);
+        assert_eq!(
+            user_bits,
+            ((b'T' as u32) << 24) | ((b'S' as u32) << 16) | ((b'E' as u32) << 8) | (b'T' as u32)
+        );
     }
 
     #[test]
     fn test_user_bits_date() {
         let user_bits = UserBitsEncoder::encode_date(12, 31, 2023);
-        assert_ne!(user_bits, 0);
+        const CORRECT: u32 = ((1_u32) << 0)
+            | ((2_u32) << 4)
+            | ((3_u32) << 8)
+            | ((1_u32) << 12)
+            | ((2_u32) << 16)
+            | ((3_u32) << 20);
+        assert_eq!(user_bits, CORRECT, "{:x?} vs {:x?}", user_bits, CORRECT);
     }
 
     #[test]
@@ -633,5 +707,92 @@ mod tests {
 
         let bits = [true, false, false]; // 1 true bit = odd
         assert!(encoder.calculate_even_parity(&bits));
+    }
+
+    #[cfg(feature = "full-test")]
+    #[test]
+    fn smpte_ltc_eq() {
+        use super::*;
+
+        const NUM_BLOCKS: usize = 1000;
+        const SAMPLE_RATE: usize = 48000;
+        const SMPTE_FRAME_RATE: usize = 25;
+        const SAMPLES_PER_FRAME: usize = SAMPLE_RATE / SMPTE_FRAME_RATE;
+        const SAMPLES_PER_BIT: usize = SAMPLES_PER_FRAME / 80;
+
+        let mut encoder = LtcEncoder::new(SAMPLE_RATE as u32, FrameRate::Fps25, 0.5);
+
+        let mut timecode = Timecode::new(0, 0, 0, 0, FrameRate::Fps25).expect("valid");
+        let mut generated_samples = Vec::new();
+        for _ in 0..NUM_BLOCKS {
+            generated_samples.extend(encoder.encode_frame(&timecode).expect("write"));
+            timecode.increment().unwrap();
+        }
+
+        assert_ne!(generated_samples.iter().map(|s| s.abs()).sum::<f32>(), 0.0);
+
+        let reader = hound::WavReader::open("tests/data/smpte_25fps.wav");
+
+        assert!(reader.is_ok());
+        let mut reader = reader.unwrap();
+        let rsamples: Vec<i16> = reader.samples::<i16>().map(|o| o.unwrap_or(0)).collect();
+
+        let rpeak = rsamples.iter().max().unwrap_or(&0);
+
+        let cscale_factor = *rpeak as f32 / i16::MAX as f32;
+
+        let csamples: Vec<i16> = generated_samples
+            .into_iter()
+            .map(|v| (v * 32768.0 * cscale_factor * 2.0) as i16)
+            .collect();
+
+        const EQUAL_THRESHOLD: u16 = 2;
+        for (i, (a, b)) in csamples.iter().zip(rsamples.iter()).enumerate() {
+            if i % SAMPLES_PER_FRAME / SAMPLES_PER_BIT == 27
+                || i % SAMPLES_PER_FRAME / SAMPLES_PER_BIT == 59
+                || i % SAMPLES_PER_FRAME / SAMPLES_PER_BIT == 43
+            {
+                continue;
+            }
+            if a.abs().abs_diff(b.abs()) >= EQUAL_THRESHOLD {
+                std::println!("Failed at sample {}", i);
+                std::println!("splglb\tsplloc\tframe\tbit\tthis\trea");
+
+                for j in i.saturating_sub(3)..i {
+                    std::println!(
+                        "{j}\t{}\t{}\t{}\t{}\t{}\tO",
+                        j % SAMPLES_PER_FRAME,
+                        j / SAMPLES_PER_FRAME,
+                        j % SAMPLES_PER_FRAME / SAMPLES_PER_BIT,
+                        csamples[j],
+                        rsamples[j]
+                    );
+                }
+                std::println!(
+                    "{i}\t{}\t{}\t{}\t{}\t{}\t<--",
+                    i % SAMPLES_PER_FRAME,
+                    i / SAMPLES_PER_FRAME,
+                    i % SAMPLES_PER_FRAME / SAMPLES_PER_BIT,
+                    a,
+                    b
+                );
+                for j in i + 1..i + 8 {
+                    std::println!(
+                        "{j}\t{}\t{}\t{}\t{}\t{}\t{}",
+                        j % SAMPLES_PER_FRAME,
+                        j / SAMPLES_PER_FRAME,
+                        j % SAMPLES_PER_FRAME / SAMPLES_PER_BIT,
+                        csamples[j],
+                        rsamples[j],
+                        if csamples[j].abs_diff(rsamples[j]) < EQUAL_THRESHOLD {
+                            "O"
+                        } else {
+                            "X"
+                        }
+                    );
+                }
+                assert!(a.abs_diff(*b) < EQUAL_THRESHOLD);
+            }
+        }
     }
 }
