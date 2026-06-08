@@ -39,7 +39,7 @@ impl IpAddress {
         let (addr, port) = str.split_once(':')?;
         Some(Self {
             port: port.parse().ok()?,
-            addr: IpAddress::octets_from_str(addr)?,
+            addr: Self::octets_from_str(addr)?,
         })
     }
 
@@ -48,7 +48,7 @@ impl IpAddress {
     pub fn from_str_and_port(str: &str, port: u16) -> Option<Self> {
         Some(Self {
             port,
-            addr: IpAddress::octets_from_str(str)?,
+            addr: Self::octets_from_str(str)?,
         })
     }
 
@@ -96,7 +96,7 @@ impl fmt::Display for IpAddress {
 
 /// Which end of a network connection is this?
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, Copy)]
+#[derive(Clone, Debug, PartialEq, Eq, Copy)]
 pub enum ConnectionEnd {
     /// The ClicKS core
     Server,
@@ -110,7 +110,7 @@ pub enum ConnectionEnd {
 
 /// Information about a connection
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, Copy)]
+#[derive(Clone, Debug, PartialEq, Eq, Copy)]
 pub struct ConnectionInfo {
     /// Identifier
     pub identifier: StaticString<32>,
@@ -122,7 +122,7 @@ pub struct ConnectionInfo {
 
 impl Default for ConnectionInfo {
     fn default() -> Self {
-        ConnectionInfo {
+        Self {
             end: ConnectionEnd::Local,
             identifier: StaticString::new("Unknown identifier"),
             address: IpAddress::default(),
