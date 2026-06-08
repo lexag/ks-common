@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["clicks", "generic"]
+members = ["clicks", "generic", "ui"]
 
 [workspace.package]
 version = "2.2.0"
