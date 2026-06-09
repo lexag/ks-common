@@ -33,6 +33,7 @@ pub mod smpte {
     pub use super::timecode::TimecodeOffset;
 
     /// Encoder and decoder to and from audio LTC signal
+    #[cfg(feature = "std")]
     pub mod ltc {
         pub use crate::timecode::readwrite::LtcReader;
         pub use crate::timecode::readwrite::LtcReaderConfig;
