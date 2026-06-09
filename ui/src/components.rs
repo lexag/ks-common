@@ -1,5 +1,9 @@
 use core::fmt::Display;
-use egui::IntoAtoms;
+use egui::{IntoAtoms, Widget};
+
+const SELECTOR_LIST_WIDTH: f32 = 250.0;
+const SELECTOR_LIST_MIN_HEIGHT: f32 = 500.0;
+const SELECTOR_LIST_MIN_ITEM_HEIGHT: f32 = 64.0;
 
 pub fn selector_list_index<T>(
     ui: &mut egui::Ui,
@@ -14,17 +18,23 @@ where
     ui.vertical(|ui| {
         ui.heading(label);
         egui::Frame::group(ui.style()).show(ui, |ui| {
-            ui.set_min_height(500.0);
-            ui.set_min_width(200.0);
+            ui.set_min_height(SELECTOR_LIST_MIN_HEIGHT);
+            ui.set_width(SELECTOR_LIST_WIDTH);
             egui::ScrollArea::vertical().id_salt(label).show(ui, |ui| {
-                for (i, option) in options.iter().enumerate() {
-                    if ui
-                        .selectable_label(Some(i) == selected_idx, option.to_string())
-                        .clicked()
-                    {
-                        clicked = Some(i);
+                ui.vertical_centered_justified(|ui| {
+                    for (i, option) in options.iter().enumerate() {
+                        let label =
+                            egui::Button::selectable(Some(i) == selected_idx, option.to_string())
+                                .wrap()
+                                .min_size(
+                                    [SELECTOR_LIST_WIDTH, SELECTOR_LIST_MIN_ITEM_HEIGHT].into(),
+                                )
+                                .ui(ui);
+                        if label.clicked() {
+                            clicked = Some(i);
+                        }
                     }
-                }
+                });
             });
         });
     });
