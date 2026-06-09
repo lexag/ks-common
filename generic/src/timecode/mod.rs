@@ -17,7 +17,10 @@ use std::string::String;
 
 #[cfg(not(feature = "std"))]
 use crate::str::StaticString;
-use core::{fmt, hash::Hash};
+use core::{
+    fmt::{self, Display},
+    hash::Hash,
+};
 
 /// SMPTE timecode frame rates
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -54,6 +57,26 @@ pub enum FrameRate {
     Fps120,
 }
 
+impl Display for FrameRate {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Fps23976 => write!(f, "23.976"),
+            Self::Fps23976DF => write!(f, "23.976 DF"),
+            Self::Fps24 => write!(f, "24"),
+            Self::Fps25 => write!(f, "25"),
+            Self::Fps2997DF => write!(f, "29.97 DF"),
+            Self::Fps2997NDF => write!(f, "29.97 NDF"),
+            Self::Fps30 => write!(f, "30"),
+            Self::Fps47952 => write!(f, "47.952"),
+            Self::Fps47952DF => write!(f, "47.952 DF"),
+            Self::Fps50 => write!(f, "50"),
+            Self::Fps5994 => write!(f, "59.94"),
+            Self::Fps5994DF => write!(f, "59.94 DF"),
+            Self::Fps60 => write!(f, "60"),
+            Self::Fps120 => write!(f, "120"),
+        }
+    }
+}
 impl FrameRate {
     /// Get the nominal frame rate as a float
     pub fn as_float(&self) -> f64 {
