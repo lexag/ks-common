@@ -1,8 +1,10 @@
 use crate::{
-    component_interface::InlineWidget,
+    component_interface::{ConfigurationWidget, InlineWidget},
+    components::big_slider,
     graphics::{self, draw_segmented_display},
     style,
 };
+use egui::Widget;
 
 const CHAR: f32 = graphics::SEGMENTED_CHAR_WIDTH;
 const SEPR: f32 = graphics::SEGMENTED_SEPR_WIDTH;
@@ -32,5 +34,25 @@ impl InlineWidget for bool {
 
     fn on_click(&mut self) {
         *self = !*self;
+    }
+}
+
+impl InlineWidget for u8 {
+    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+        draw_segmented_display(
+            ui,
+            &[CHAR, CHAR, CHAR],
+            &format!("{: >3}", self),
+            ui.visuals().text_color(),
+            scale,
+        )
+    }
+}
+
+impl ConfigurationWidget for u8 {
+    fn grid_contents(&mut self, ui: &mut egui::Ui) {
+        if let Some(fraction) = big_slider(ui, (*self as f32) / 255.0) {
+            *self = (fraction * 255.0) as Self;
+        }
     }
 }
