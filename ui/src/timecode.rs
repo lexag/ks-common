@@ -1,13 +1,13 @@
 use crate::{
     component_interface::{ConfigurationWidget, InlineWidget},
-    graphics::draw_segmented_display,
+    graphics::{self, draw_segmented_display},
     style,
 };
-use egui::{Sense, Vec2, Widget};
+use egui::Widget;
 use ks_common_generic::smpte::{Timecode, TimecodeOffset};
 
-const CHAR: f32 = 9.0;
-const SEPR: f32 = 5.0;
+const CHAR: f32 = graphics::SEGMENTED_CHAR_WIDTH;
+const SEPR: f32 = graphics::SEGMENTED_SEPR_WIDTH;
 const CHAR_WIDTHS: &[f32] = &[
     CHAR, CHAR, SEPR, CHAR, CHAR, SEPR, CHAR, CHAR, SEPR, CHAR, CHAR, SEPR, CHAR, CHAR,
 ];
@@ -56,43 +56,41 @@ impl InlineWidget for TimecodeOffset {
 }
 
 impl ConfigurationWidget for TimecodeOffset {
-    fn grid_contents(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        egui::Frame::group(ui.style())
-            .show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    if ui
-                        .button(if self.is_negative { "-" } else { "+" })
-                        .clicked()
-                    {
-                        self.is_negative = !self.is_negative;
-                    };
-                    let mut hours = self.abs_time.hours;
-                    let mut minutes = self.abs_time.minutes;
-                    let mut seconds = self.abs_time.seconds;
-                    let mut frames = self.abs_time.frames;
-                    for (val, suffix, max) in [
-                        (&mut hours, "h", 23),
-                        (&mut minutes, "m", 59),
-                        (&mut seconds, "s", 59),
-                        (&mut frames, "f", self.abs_time.frame_rate.fps),
-                    ] {
-                        egui::DragValue::new(val)
-                            .suffix(suffix)
-                            .range(0..=max as i32)
-                            .speed(0.01)
-                            .ui(ui);
-                    }
-                    self.abs_time = Timecode::from_raw_fields(
-                        hours,
-                        minutes,
-                        seconds,
-                        frames,
-                        self.abs_time.frame_rate.fps,
-                        self.abs_time.frame_rate.drop_frame,
-                        0,
-                    );
-                });
-            })
-            .response
+    fn grid_contents(&mut self, ui: &mut egui::Ui) {
+        egui::Frame::group(ui.style()).show(ui, |ui| {
+            ui.horizontal(|ui| {
+                if ui
+                    .button(if self.is_negative { "-" } else { "+" })
+                    .clicked()
+                {
+                    self.is_negative = !self.is_negative;
+                };
+                let mut hours = self.abs_time.hours;
+                let mut minutes = self.abs_time.minutes;
+                let mut seconds = self.abs_time.seconds;
+                let mut frames = self.abs_time.frames;
+                for (val, suffix, max) in [
+                    (&mut hours, "h", 23),
+                    (&mut minutes, "m", 59),
+                    (&mut seconds, "s", 59),
+                    (&mut frames, "f", self.abs_time.frame_rate.fps),
+                ] {
+                    egui::DragValue::new(val)
+                        .suffix(suffix)
+                        .range(0..=max as i32)
+                        .speed(0.01)
+                        .ui(ui);
+                }
+                self.abs_time = Timecode::from_raw_fields(
+                    hours,
+                    minutes,
+                    seconds,
+                    frames,
+                    self.abs_time.frame_rate.fps,
+                    self.abs_time.frame_rate.drop_frame,
+                    0,
+                );
+            });
+        });
     }
 }

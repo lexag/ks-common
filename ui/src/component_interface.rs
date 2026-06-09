@@ -53,14 +53,16 @@ pub trait InlineWidget {
 pub trait ConfigurationWidget {
     /// Main function for this trait. Call this from outside, and it handles the rest.
     fn draw_configuration(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        egui::Grid::new(ui.next_auto_id())
-            .show(ui, |ui| self.grid_contents(ui))
+        egui::Frame::group(ui.style())
+            .show(ui, |ui| {
+                egui::Grid::new(ui.next_auto_id()).show(ui, |ui| self.grid_contents(ui));
+            })
             .response
     }
 
     /// Recommended impl function for this trait. Implement this and call draw_configuration, and
     /// it handles the rest.
-    fn grid_contents(&mut self, ui: &mut egui::Ui) -> egui::Response;
+    fn grid_contents(&mut self, ui: &mut egui::Ui);
 }
 
 pub trait InlineWidgetMenu {

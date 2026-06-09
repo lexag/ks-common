@@ -1,5 +1,8 @@
 use egui::{Align2, Color32, FontId, Pos2, Sense, Vec2};
 
+pub const SEGMENTED_CHAR_WIDTH: f32 = 9.0;
+pub const SEGMENTED_SEPR_WIDTH: f32 = 5.0;
+
 pub fn draw_segmented_display(
     ui: &mut egui::Ui,
     char_widths: &[f32],
