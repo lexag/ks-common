@@ -1,16 +1,21 @@
 //! Implementable display traits for rendering types into egui
 
-use egui::{InnerResponse, Response, containers::menu::MenuConfig};
+use egui::Response;
 
 /// Small (status-bar sized) visual representation of a type.
 /// Can be text-based or visual.
 pub trait InlineWidget {
     /// Render function for this trait
-    fn draw(&mut self, ui: &mut egui::Ui) -> egui::Response;
+    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response;
 
     /// Main function for this trait. Call this from outside, and it handles the rest.
     fn inline_widget(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        let widget = self.draw(ui);
+        self.inline_widget_scaled(ui, 1.4)
+    }
+
+    /// Alternative function, allowing non-standard scale for this widget
+    fn inline_widget_scaled(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+        let widget = self.draw(ui, scale);
         if widget.clicked() {
             self.on_click()
         }

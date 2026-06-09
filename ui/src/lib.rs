@@ -4,4 +4,5 @@ pub mod component_interface;
 pub mod components;
 pub mod style;
 
+pub mod primitive;
 pub mod timecode;

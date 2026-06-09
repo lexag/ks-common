@@ -15,7 +15,8 @@ where
         ui.heading(label);
         egui::Frame::group(ui.style()).show(ui, |ui| {
             ui.set_min_height(500.0);
-            egui::ScrollArea::vertical().show(ui, |ui| {
+            ui.set_min_width(200.0);
+            egui::ScrollArea::vertical().id_salt(label).show(ui, |ui| {
                 for (i, option) in options.iter().enumerate() {
                     if ui
                         .selectable_label(Some(i) == selected_idx, option.to_string())
