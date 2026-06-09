@@ -1,0 +1,83 @@
+use crate::{
+    component_interface::{ConfigurationWidget, InlineWidget, InlineWidgetMenu},
+    components::selector_list_value,
+    graphics::{self, draw_segmented_display},
+    style,
+};
+use core::fmt::Display;
+use egui::Color32;
+
+pub trait InlineWidgetAutoEnum {
+    fn options() -> Vec<Self>
+    where
+        Self: Sized + Display;
+
+    fn color(&self) -> Option<Color32> {
+        None
+    }
+
+    fn text(&self) -> Option<String> {
+        None
+    }
+
+    fn autoenum_inline_widget(&mut self, ui: &mut egui::Ui)
+    where
+        Self: InlineWidget,
+    {
+        self.inline_widget(ui);
+    }
+
+    fn autoenum_inline_widget_menu(&mut self, ui: &mut egui::Ui)
+    where
+        Self: InlineWidgetMenu + Clone + ConfigurationWidget,
+    {
+        self.clone().inline_widget_menu(ui, |ui| {
+            self.draw_configuration(ui);
+        });
+    }
+}
+
+impl<T> InlineWidget for T
+where
+    T: InlineWidgetAutoEnum + Display,
+{
+    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+        let options = T::options();
+        let text = self.text().unwrap_or(self.to_string());
+        let max_width = if options.is_empty() {
+            0
+        } else {
+            options
+                .iter()
+                .map(|s| s.text().unwrap_or(s.to_string()).len())
+                .max()
+                .expect("Iter can't be empty")
+        };
+        draw_segmented_display(
+            ui,
+            &[graphics::SEGMENTED_CHAR_WIDTH; 32][..max_width],
+            &text,
+            self.color().unwrap_or(ui.visuals().text_color()),
+            scale,
+        )
+    }
+}
+
+impl<T> ConfigurationWidget for T
+where
+    T: InlineWidgetAutoEnum + InlineWidgetAutoEnum + Clone + PartialEq + Display,
+{
+    fn draw_configuration(&mut self, ui: &mut egui::Ui) -> egui::Response {
+        if let Some(selection) = selector_list_value(ui, &T::options(), self, "") {
+            *self = selection;
+        }
+        // FIXME: this is not the right response, but we've kind of painted ourselves into a corner
+        // by requiring Response returns for some but not all UI elements, and so in this case we
+        // have none to return.
+        ui.response()
+    }
+
+    fn grid_contents(&mut self, ui: &mut egui::Ui) {
+        unimplemented!()
+    }
+}
