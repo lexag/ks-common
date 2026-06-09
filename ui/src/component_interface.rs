@@ -47,10 +47,7 @@ pub trait InlineWidget {
 /// Should most likely be a grid of properties and their values.
 pub trait ConfigurationWidget {
     /// Main function for this trait. Call this from outside, and it handles the rest.
-    fn draw_configuration(&mut self, ui: &mut egui::Ui) -> egui::Response
-    where
-        Self: core::hash::Hash,
-    {
+    fn draw_configuration(&mut self, ui: &mut egui::Ui) -> egui::Response {
         egui::Grid::new(ui.next_auto_id())
             .show(ui, |ui| self.grid_contents(ui))
             .response

@@ -1,4 +1,5 @@
 use egui::{Align2, Color32, FontId, Pos2, Sense, Vec2};
+use std::fmt::Display;
 
 pub fn draw_segmented_display(
     ui: &mut egui::Ui,
