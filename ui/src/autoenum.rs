@@ -44,15 +44,20 @@ where
     fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
         let options = T::options();
         let text = self.text().unwrap_or(self.to_string());
+        let lengths = options
+            .iter()
+            .map(|s| s.text().unwrap_or(s.to_string()).len());
         let max_width = if options.is_empty() {
             0
         } else {
-            options
-                .iter()
-                .map(|s| s.text().unwrap_or(s.to_string()).len())
-                .max()
-                .expect("Iter can't be empty")
+            let len = lengths.clone().max().expect("Not empty");
+            if lengths.min().expect("Not empty") != len {
+                len + 2
+            } else {
+                len
+            }
         };
+
         draw_segmented_display(
             ui,
             &[graphics::SEGMENTED_CHAR_WIDTH; 32][..max_width],
