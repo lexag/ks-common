@@ -42,13 +42,13 @@ pub fn style() -> Style {
         spacing: spacing(),
         interaction: interaction(),
         visuals: visuals(),
-        animation_time: 0.7,
+        animation_time: 0.4,
         explanation_tooltips: true,
         url_in_tooltip: true,
         always_scroll_the_only_direction: true,
         scroll_animation: ScrollAnimation {
             points_per_second: 400.0,
-            duration: (0.0..=4.0).into(),
+            duration: (0.0..=0.8).into(),
         },
         compact_menu_style: true,
         ..Default::default()
