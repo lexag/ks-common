@@ -7,4 +7,5 @@ pub mod style;
 
 pub mod ip;
 pub mod primitive;
+pub mod str;
 pub mod timecode;
