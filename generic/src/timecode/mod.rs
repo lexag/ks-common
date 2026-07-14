@@ -589,7 +589,6 @@ impl Timecode {
     /// Encode ASCII string to user bits (8 characters max)
     pub fn encode_user_bits_ascii(text: &str) -> u32 {
         let bytes = text.as_bytes();
-        std::println!("{:x?}", bytes);
         let mut user_bits = 0u32;
 
         for (i, &byte) in bytes.iter().take(4).enumerate() {

@@ -471,7 +471,7 @@ mod tests {
     #[test]
     fn test_encoder_creation() {
         let encoder = LtcEncoder::new(48000, FrameRate::Fps25, 0.5);
-        assert_eq!(encoder.amplitude(), 0.5);
+        assert_eq!(encoder.amplitude, 0.5);
     }
 
     #[test]
