@@ -1,6 +1,10 @@
 [workspace]
 resolver = "3"
-members = ["beat", "common", "cue", "event", "mem", "protocol", "local"]
+members = ["clicks", "generic", "ui"]
+
+[workspace.package]
+version = "2.3.0"
+edition = "2024"
 
 [workspace.lints.clippy]
 branches_sharing_code = "warn"
@@ -12,8 +16,8 @@ suspicious_operation_groupings = "warn"
 unnecessary_struct_initialization = "warn"
 use_self = "warn"
 useless_let_if_seq = "warn"
-arbitrary_source_item_ordering = "warn"
-arithmetic_side_effects = "warn"
+#arbitrary_source_item_ordering = "warn"
+#arithmetic_side_effects = "warn"
 decimal_literal_representation = "warn"
 std_instead_of_core = "warn"
 todo = "warn"
