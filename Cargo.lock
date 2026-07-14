@@ -276,26 +276,15 @@ dependencies = [
 
 [[package]]
 name = "ks-common-clicks"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "bitflags",
  "chrono",
- "ks-common-generic 2.2.0",
+ "ks-common-generic 2.3.0",
  "postcard",
  "serde",
  "serde_json",
  "tiny_sort",
-]
-
-[[package]]
-name = "ks-common-generic"
-version = "2.2.0"
-dependencies = [
- "bitflags",
- "hound",
- "postcard",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -307,11 +296,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "ks-common-generic"
+version = "2.3.0"
+dependencies = [
+ "bitflags",
+ "hound",
+ "postcard",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "ks-common-ui"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "egui",
- "ks-common-generic 2.2.0 (git+https://github.com/lexag/ks-common?branch=release%2Fv2.3.0)",
+ "ks-common-generic 2.2.0",
 ]
 
 [[package]]

@@ -585,6 +585,44 @@ impl Timecode {
 
         Ok(())
     }
+
+    /// Encode ASCII string to user bits (8 characters max)
+    pub fn encode_user_bits_ascii(text: &str) -> u32 {
+        let bytes = text.as_bytes();
+        std::println!("{:x?}", bytes);
+        let mut user_bits = 0u32;
+
+        for (i, &byte) in bytes.iter().take(4).enumerate() {
+            user_bits |= (byte as u32) << (i * 8);
+        }
+
+        user_bits
+    }
+
+    /// Encode timecode date (MMDDYYYY format, packed BCD)
+    pub fn encode_user_bits_date(month: u8, day: u8, year: u16) -> u32 {
+        let mut user_bits = 0u32;
+
+        // Month (MM)
+        user_bits |= (month / 10) as u32;
+        user_bits |= ((month % 10) as u32) << 4;
+
+        // Day (DD)
+        user_bits |= ((day / 10) as u32) << 8;
+        user_bits |= ((day % 10) as u32) << 12;
+
+        // Year (YYYY) - last two digits
+        let year_short = (year % 100) as u8;
+        user_bits |= ((year_short / 10) as u32) << 16;
+        user_bits |= ((year_short % 10) as u32) << 20;
+
+        user_bits
+    }
+
+    /// Encode binary data directly
+    pub fn encode_user_bits_binary(data: u32) -> u32 {
+        data
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1146,5 +1184,26 @@ mod tests {
                     .expect("valid"),
             Timecode::new(23, 57, 4, 0, FrameRate::Fps25)
         );
+    }
+
+    #[test]
+    fn test_user_bits_ascii() {
+        let user_bits = Timecode::encode_user_bits_ascii("TEST");
+        assert_eq!(
+            user_bits,
+            ((b'T' as u32) << 24) | ((b'S' as u32) << 16) | ((b'E' as u32) << 8) | (b'T' as u32)
+        );
+    }
+
+    #[test]
+    fn test_user_bits_date() {
+        let user_bits = Timecode::encode_user_bits_date(12, 31, 2023);
+        const CORRECT: u32 = ((1_u32) << 0)
+            | ((2_u32) << 4)
+            | ((3_u32) << 8)
+            | ((1_u32) << 12)
+            | ((2_u32) << 16)
+            | ((3_u32) << 20);
+        assert_eq!(user_bits, CORRECT, "{:x?} vs {:x?}", user_bits, CORRECT);
     }
 }

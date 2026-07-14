@@ -71,6 +71,11 @@ impl LtcDecoder {
         }
     }
 
+    /// Get this decoder's set frame rate
+    pub fn frame_rate(&self) -> FrameRate {
+        self.frame_rate
+    }
+
     /// Process audio samples and decode timecode
     pub fn process_samples(&mut self, samples: &[f32]) -> Result<Option<Timecode>, TimecodeError> {
         let mut result = None;

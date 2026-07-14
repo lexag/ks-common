@@ -52,7 +52,6 @@ impl Default for LtcReaderConfig {
 /// LTC reader
 pub struct LtcReader {
     decoder: decoder::LtcDecoder,
-    frame_rate: FrameRate,
 }
 
 impl LtcReader {
@@ -64,7 +63,6 @@ impl LtcReader {
                 config.frame_rate,
                 config.min_amplitude,
             ),
-            frame_rate: config.frame_rate,
         }
     }
 
@@ -100,7 +98,7 @@ impl TimecodeReader for LtcReader {
     }
 
     fn frame_rate(&self) -> FrameRate {
-        self.frame_rate
+        self.decoder.frame_rate()
     }
 
     fn is_synchronized(&self) -> bool {
@@ -132,7 +130,6 @@ impl Default for LtcWriterConfig {
 /// LTC writer
 pub struct LtcWriter {
     encoder: LtcEncoder,
-    frame_rate: FrameRate,
 }
 
 impl LtcWriter {
@@ -140,7 +137,6 @@ impl LtcWriter {
     pub fn new(config: LtcWriterConfig) -> Self {
         Self {
             encoder: LtcEncoder::new(config.sample_rate, config.frame_rate, config.amplitude),
-            frame_rate: config.frame_rate,
         }
     }
 
@@ -163,7 +159,7 @@ impl TimecodeWriter for LtcWriter {
     }
 
     fn frame_rate(&self) -> FrameRate {
-        self.frame_rate
+        self.encoder.frame_rate()
     }
 
     fn flush(&mut self) -> Result<(), TimecodeError> {

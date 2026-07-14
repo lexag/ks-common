@@ -50,6 +50,11 @@ impl LtcEncoder {
         }
     }
 
+    /// Get this encoder's set frame rate
+    pub fn frame_rate(&self) -> FrameRate {
+        self.frame_rate
+    }
+
     /// Encode a timecode frame to audio samples
     pub fn encode_frame(&mut self, timecode: &Timecode) -> Result<Vec<f32>, TimecodeError> {
         // Create bit array
@@ -70,7 +75,7 @@ impl LtcEncoder {
         //}
         let mut out = std::vec![0.0; buf.len()];
         const LP_WIDTH: usize = 3;
-        for idx in 0..buf.len() {
+        for (idx, item) in out.iter_mut().enumerate().take(buf.len()) {
             let mut cumsum = 0.0;
             for offs_idx in idx..idx + LP_WIDTH {
                 cumsum += if offs_idx < buf.len() {
@@ -80,7 +85,7 @@ impl LtcEncoder {
                 }
             }
             cumsum /= LP_WIDTH as f32;
-            out[idx] = cumsum;
+            *item = cumsum;
         }
         out
     }
@@ -264,16 +269,6 @@ impl LtcEncoder {
     pub fn reset(&mut self) {
         self.phase = 0.0;
         self.polarity = false;
-    }
-
-    /// Set output amplitude
-    pub fn set_amplitude(&mut self, amplitude: f32) {
-        self.amplitude = amplitude.clamp(0.0, 1.0);
-    }
-
-    /// Get current amplitude
-    pub fn amplitude(&self) -> f32 {
-        self.amplitude
     }
 }
 
@@ -469,155 +464,6 @@ impl Limiter {
     }
 }
 
-/// LTC frame buffer for continuous encoding
-pub struct LtcFrameBuffer {
-    /// Sample rate
-    sample_rate: u32,
-    /// Frame rate
-    frame_rate: FrameRate,
-    /// Amplitude
-    amplitude: f32,
-    /// Buffered samples
-    buffer: Vec<f32>,
-    /// Current timecode
-    current_timecode: Option<Timecode>,
-}
-
-impl LtcFrameBuffer {
-    /// Create a new frame buffer
-    pub fn new(sample_rate: u32, frame_rate: FrameRate, amplitude: f32) -> Self {
-        Self {
-            sample_rate,
-            frame_rate,
-            amplitude,
-            buffer: Vec::new(),
-            current_timecode: None,
-        }
-    }
-
-    /// Set the starting timecode
-    pub fn set_timecode(&mut self, timecode: Timecode) {
-        self.current_timecode = Some(timecode);
-    }
-
-    /// Generate samples for the next frame
-    pub fn generate_frame(&mut self) -> Result<Vec<f32>, TimecodeError> {
-        if let Some(ref mut tc) = self.current_timecode {
-            let mut encoder = LtcEncoder::new(self.sample_rate, self.frame_rate, self.amplitude);
-            let samples = encoder.encode_frame(tc)?;
-
-            // Increment timecode for next frame
-            tc.increment()?;
-
-            Ok(samples)
-        } else {
-            Err(TimecodeError::InvalidConfiguration)
-        }
-    }
-
-    /// Fill buffer with samples up to a target duration
-    pub fn fill_buffer(&mut self, target_samples: usize) -> Result<(), TimecodeError> {
-        while self.buffer.len() < target_samples {
-            let frame_samples = self.generate_frame()?;
-            self.buffer.extend_from_slice(&frame_samples);
-        }
-        Ok(())
-    }
-
-    /// Read samples from buffer
-    pub fn read_samples(&mut self, count: usize) -> Vec<f32> {
-        let available = self.buffer.len().min(count);
-        let samples: Vec<f32> = self.buffer.drain(..available).collect();
-        samples
-    }
-
-    /// Get buffer level
-    pub fn buffer_level(&self) -> usize {
-        self.buffer.len()
-    }
-}
-
-/// User bits encoder helpers
-pub struct UserBitsEncoder;
-
-impl UserBitsEncoder {
-    /// Encode ASCII string to user bits (8 characters max)
-    pub fn encode_ascii(text: &str) -> u32 {
-        let bytes = text.as_bytes();
-        std::println!("{:x?}", bytes);
-        let mut user_bits = 0u32;
-
-        for (i, &byte) in bytes.iter().take(4).enumerate() {
-            user_bits |= (byte as u32) << (i * 8);
-        }
-
-        user_bits
-    }
-
-    /// Encode timecode date (MMDDYYYY format, packed BCD)
-    pub fn encode_date(month: u8, day: u8, year: u16) -> u32 {
-        let mut user_bits = 0u32;
-
-        // Month (MM)
-        user_bits |= (month / 10) as u32;
-        user_bits |= ((month % 10) as u32) << 4;
-
-        // Day (DD)
-        user_bits |= ((day / 10) as u32) << 8;
-        user_bits |= ((day % 10) as u32) << 12;
-
-        // Year (YYYY) - last two digits
-        let year_short = (year % 100) as u8;
-        user_bits |= ((year_short / 10) as u32) << 16;
-        user_bits |= ((year_short % 10) as u32) << 20;
-
-        user_bits
-    }
-
-    /// Encode binary data directly
-    pub fn encode_binary(data: u32) -> u32 {
-        data
-    }
-}
-
-/// Signal quality metrics
-pub struct SignalQualityMetrics {
-    /// Peak amplitude
-    pub peak_amplitude: f32,
-    /// RMS amplitude
-    pub rms_amplitude: f32,
-    /// Crest factor (peak/RMS)
-    pub crest_factor: f32,
-    /// DC offset
-    pub dc_offset: f32,
-}
-
-impl SignalQualityMetrics {
-    /// Calculate metrics from samples
-    pub fn from_samples(samples: &[f32]) -> Self {
-        let mut sum = 0.0;
-        let mut sum_squared = 0.0;
-        let mut peak: f32 = 0.0;
-
-        for &sample in samples {
-            sum += sample;
-            sum_squared += sample * sample;
-            peak = peak.max(sample.abs());
-        }
-
-        let dc_offset = sum / samples.len() as f32;
-        let rms = (sum_squared / samples.len() as f32).sqrt();
-        let crest_factor = if rms > 0.0 { peak / rms } else { 0.0 };
-
-        Self {
-            peak_amplitude: peak,
-            rms_amplitude: rms,
-            crest_factor,
-            dc_offset,
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -676,27 +522,6 @@ mod tests {
         for i in 0..80 {
             assert_eq!(bits[i], CORRECT[i], "at bit {}", i);
         }
-    }
-
-    #[test]
-    fn test_user_bits_ascii() {
-        let user_bits = UserBitsEncoder::encode_ascii("TEST");
-        assert_eq!(
-            user_bits,
-            ((b'T' as u32) << 24) | ((b'S' as u32) << 16) | ((b'E' as u32) << 8) | (b'T' as u32)
-        );
-    }
-
-    #[test]
-    fn test_user_bits_date() {
-        let user_bits = UserBitsEncoder::encode_date(12, 31, 2023);
-        const CORRECT: u32 = ((1_u32) << 0)
-            | ((2_u32) << 4)
-            | ((3_u32) << 8)
-            | ((1_u32) << 12)
-            | ((2_u32) << 16)
-            | ((3_u32) << 20);
-        assert_eq!(user_bits, CORRECT, "{:x?} vs {:x?}", user_bits, CORRECT);
     }
 
     #[test]

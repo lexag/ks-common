@@ -14,7 +14,7 @@ hound = { version = "3.5.1", optional = true }
 serde = ["dep:serde", "std", "serde/std"]
 std = []
 postcard = ["dep:postcard"]
-json = ["dep:serde_json"]
+json = ["dep:serde_json", "serde"]
 full-test = ["dep:hound", "serde"]
 
 [lints]

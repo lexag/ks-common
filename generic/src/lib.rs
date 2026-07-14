@@ -35,6 +35,8 @@ pub mod smpte {
     /// Encoder and decoder to and from audio LTC signal
     #[cfg(feature = "std")]
     pub mod ltc {
+        pub use crate::timecode::TimecodeReader;
+        pub use crate::timecode::TimecodeWriter;
         pub use crate::timecode::readwrite::LtcReader;
         pub use crate::timecode::readwrite::LtcReaderConfig;
         pub use crate::timecode::readwrite::LtcWriter;
