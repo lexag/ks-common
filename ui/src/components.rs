@@ -1,7 +1,6 @@
 use crate::style;
 use core::fmt::Display;
-use egui::{IntoAtoms, Sense, SliderOrientation, Vec2, Widget};
-use std::ops::{Add, Div, Shr};
+use egui::{Sense, Vec2, Widget};
 
 const SELECTOR_LIST_WIDTH: f32 = 250.0;
 const SELECTOR_LIST_MIN_HEIGHT: f32 = 500.0;

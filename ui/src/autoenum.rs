@@ -2,7 +2,6 @@ use crate::{
     component_interface::{ConfigurationWidget, InlineWidget, InlineWidgetMenu},
     components::selector_list_value,
     graphics::{self, draw_segmented_display},
-    style,
 };
 use core::fmt::Display;
 use egui::Color32;
@@ -82,7 +81,7 @@ where
         ui.response()
     }
 
-    fn grid_contents(&mut self, ui: &mut egui::Ui) {
+    fn grid_contents(&mut self, _ui: &mut egui::Ui) {
         unimplemented!()
     }
 }

@@ -1,10 +1,7 @@
 use egui::{
-    Color32, Context, CornerRadius, CursorIcon, FontData, FontDefinitions, FontId, Margin, Shadow,
-    Spacing, Stroke, Style, Visuals, hex_color,
-    style::{
-        Interaction, ScrollAnimation, ScrollStyle, Selection, TextCursorStyle, WidgetVisuals,
-        Widgets, default_text_styles,
-    },
+    Color32, Context, FontData, FontDefinitions, Margin, Shadow, Spacing, Stroke, Style, Visuals,
+    hex_color,
+    style::{Interaction, ScrollAnimation, ScrollStyle, Selection},
 };
 
 const INTERACTIVE_STROKE_WIDTH: f32 = 2.0;

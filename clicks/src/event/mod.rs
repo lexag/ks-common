@@ -1,11 +1,11 @@
 #![warn(missing_docs)]
 //! Definitions (and supporting data formats) for Events, which happen on a specific beat in a cue
-mod event;
-pub use event::Event;
-pub use event::EventDescription;
-pub use event::JumpModeChange;
-pub use event::JumpRequirement;
-pub use event::PauseEventBehaviour;
+mod event_inner;
+pub use event_inner::Event;
+pub use event_inner::EventDescription;
+pub use event_inner::JumpModeChange;
+pub use event_inner::JumpRequirement;
+pub use event_inner::PauseEventBehaviour;
 
 #[cfg(feature = "std")]
 mod eventcursor;

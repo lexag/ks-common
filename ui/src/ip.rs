@@ -3,9 +3,9 @@ use crate::{
     graphics::{self, draw_segmented_display},
     style,
 };
+use core::net::Ipv4Addr;
 use core::net::SocketAddrV4;
 use egui::Widget;
-use std::net::Ipv4Addr;
 
 const CHAR: f32 = graphics::SEGMENTED_CHAR_WIDTH;
 const SEPR: f32 = graphics::SEGMENTED_SEPR_WIDTH;
