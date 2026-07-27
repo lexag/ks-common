@@ -97,7 +97,7 @@ impl InlineWidget for i16 {
         draw_segmented_display(
             ui,
             &[CHAR, CHAR, CHAR, CHAR, CHAR, CHAR],
-            &format!("{}{: >5}", if *self < 0 { '-' } else { ' ' }, self),
+            &format!("{}{: >5}", if *self < 0 { '-' } else { ' ' }, self.abs()),
             ui.visuals().text_color(),
             scale,
         )
@@ -111,7 +111,7 @@ impl InlineWidget for i32 {
             &[
                 CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR,
             ],
-            &format!("{}{: >5}", if *self < 0 { '-' } else { ' ' }, self),
+            &format!("{}{: >10}", if *self < 0 { '-' } else { ' ' }, self.abs()),
             ui.visuals().text_color(),
             scale,
         )
@@ -122,8 +122,8 @@ impl InlineWidget for char {
     fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
         draw_segmented_display(
             ui,
-            &[CHAR],
-            &self.to_string(),
+            &[SEPR, CHAR, SEPR],
+            &format!(" {} ", self),
             ui.visuals().text_color(),
             scale,
         )
