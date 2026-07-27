@@ -1,6 +1,6 @@
 use crate::{components::SQUARE_BUTTON_SIZE, graphics::SEGMENTED_CHAR_WIDTH, style};
 use core::str::FromStr;
-use egui::{Key, Vec2, Widget};
+use egui::{Key, Sense, Vec2, Widget};
 
 pub struct Numpad<'a, T>
 where
@@ -85,6 +85,7 @@ where
         T: FromStr,
     {
         egui::Grid::new("ksui.numpad.grid")
+            .striped(false)
             .spacing(SPACING)
             .show(ui, |ui| {
                 for (i, &button_char) in self.keys.clone().iter().enumerate() {
@@ -106,8 +107,7 @@ where
     fn onscreen_key(&mut self, ui: &mut egui::Ui, c: Key) {
         let mut button = egui::Button::new(c.symbol_or_name())
             .min_size(BUTTON_SIZE)
-            .frame(true);
-
+            .sense(Sense::click_and_drag());
         if c == Key::Escape {
             button = button.fill(style::ERROR_COLOR);
         } else if c == Key::Enter {
@@ -157,6 +157,7 @@ where
         T: FromStr,
     {
         egui::Grid::new("ksui.numpad.controls")
+            .striped(false)
             .spacing(SPACING)
             .show(ui, |ui| {
                 self.onscreen_key(ui, Key::Backspace);
@@ -206,6 +207,7 @@ where
         self.check_for_external_keyboard_input(ui);
 
         egui::Grid::new("ksui.numpad.sections")
+            .striped(false)
             .show(ui, |ui| {
                 if self.side_keys.is_some() {
                     ui.allocate_space(Vec2::ZERO);
@@ -225,6 +227,7 @@ where
 
                 if let Some(keys) = self.side_keys {
                     egui::Grid::new("ksui.numpad.sidekeys")
+                        .striped(false)
                         .spacing(SPACING)
                         .show(ui, |ui| {
                             for key in keys {

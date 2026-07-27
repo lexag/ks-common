@@ -1,15 +1,16 @@
 use egui::CentralPanel;
+use ks_common_ui::style;
 
 #[derive(Default)]
 struct DemoApp {}
 
 impl DemoApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let a = Self {};
-
         // cloning here does not feel right but it seems to work
+        cc.egui_ctx.set_style(style::style());
         ks_common_ui::style::load_fonts(&mut cc.egui_ctx.clone());
-        a
+
+        Self {}
     }
 }
 
