@@ -20,6 +20,18 @@ impl InlineWidget for f32 {
     }
 }
 
+impl InlineWidget for f64 {
+    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+        draw_segmented_display(
+            ui,
+            &[CHAR, CHAR, CHAR, CHAR, SEPR, CHAR, CHAR, CHAR],
+            &format!("{:+08.3}", self.min(999.999)),
+            ui.visuals().text_color(),
+            scale,
+        )
+    }
+}
+
 impl InlineWidget for bool {
     fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
         draw_segmented_display(
