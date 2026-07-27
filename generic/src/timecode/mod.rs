@@ -871,7 +871,7 @@ pub trait TimecodeWriter {
 
 /// Timecode offset; delta time
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct TimecodeOffset {
     /// Absolute time length and framerate of this offset
     pub abs_time: Timecode,
