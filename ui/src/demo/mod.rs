@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 mod inline_primitive;
 mod numpad;
 

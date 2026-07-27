@@ -1,3 +1,4 @@
+pub mod numpad;
 pub mod selector_list;
 pub mod slider;
 

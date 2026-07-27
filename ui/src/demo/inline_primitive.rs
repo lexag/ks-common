@@ -7,6 +7,10 @@ pub(crate) fn demo_inline_primitive(ui: &mut egui::Ui) {
     egui::DragValue::new(&mut val).ui(ui);
     ui.memory_mut(|w| *w.data.get_temp_mut_or(ui.id(), 0.0) = val);
 
+    demo_inline_primitive_displays(ui, val);
+}
+
+pub(crate) fn demo_inline_primitive_displays(ui: &mut egui::Ui, val: f64) {
     let mut val_u8: u8 = val as u8;
     let mut val_u16: u16 = val as u16;
     let mut val_u32: u32 = val as u32;
