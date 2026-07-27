@@ -1,7 +1,7 @@
 use crate::{
-    component_interface::{ConfigurationWidget, InlineWidget, InlineWidgetMenu},
     components::selector_list_value,
     graphics::{self, draw_segmented_display},
+    interface::{ConfigurationWidget, InlineWidget, InlineWidgetMenu},
 };
 use core::fmt::Display;
 use egui::Color32;

@@ -1,7 +1,7 @@
 use crate::{
-    component_interface::{ConfigurationWidget, InlineWidget},
     components::big_slider,
     graphics::{self, draw_segmented_display},
+    interface::{ConfigurationWidget, InlineWidget},
     style,
 };
 

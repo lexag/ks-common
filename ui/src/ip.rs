@@ -1,6 +1,6 @@
 use crate::{
-    component_interface::{ConfigurationWidget, InlineWidget},
     graphics::{self, draw_segmented_display},
+    interface::{ConfigurationWidget, InlineWidget},
     style,
 };
 use core::net::Ipv4Addr;

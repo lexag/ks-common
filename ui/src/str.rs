@@ -1,6 +1,6 @@
 use crate::{
-    component_interface::InlineWidget,
     graphics::{SEGMENTED_CHAR_WIDTH, draw_segmented_display},
+    interface::InlineWidget,
 };
 use ks_common_generic::str::StaticString;
 

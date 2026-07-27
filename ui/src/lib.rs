@@ -3,8 +3,8 @@ extern crate manifest_dir_macros;
 mod graphics;
 
 pub mod autoenum;
-pub mod component_interface;
 pub mod components;
+pub mod interface;
 pub mod style;
 
 pub mod ip;
