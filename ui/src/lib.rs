@@ -12,3 +12,6 @@ pub mod ip;
 pub mod primitive;
 pub mod str;
 pub mod timecode;
+
+#[cfg(feature = "examples")]
+pub mod demo;
