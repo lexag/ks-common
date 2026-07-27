@@ -639,31 +639,31 @@ impl FromStr for Timecode {
                     } else {
                         let cs = time_str.chars();
                         let mut val = 0_u8;
-                        let (mut hours, mut minutes, mut seconds, mut frames) = (0, 0, 0, 0);
+                        let (mut hours, mut minutes, mut seconds, mut frames) =
+                            (0_u8, 0_u8, 0_u8, 0_u8);
                         for c in cs {
                             match c.to_ascii_lowercase() {
                                 'h' => {
-                                    hours += val;
+                                    hours = hours.saturating_add(val);
                                     val = 0;
                                 }
                                 'm' => {
-                                    minutes += val;
+                                    minutes = minutes.saturating_add(val);
                                     val = 0;
                                 }
                                 's' => {
-                                    seconds += val;
+                                    seconds = seconds.saturating_add(val);
                                     val = 0;
                                 }
                                 'f' => {
-                                    frames += val;
+                                    frames = frames.saturating_add(val);
                                     val = 0;
                                 }
                                 '0'..='9' => {
                                     let Some(Ok(c_val)) = c.to_digit(10).map(u8::try_from) else {
                                         return Err(TimecodeError::InvalidConfiguration);
                                     };
-                                    val *= 10;
-                                    val += c_val;
+                                    val = val.saturating_mul(10).saturating_add(c_val);
                                 }
                                 _ => return Err(TimecodeError::InvalidConfiguration),
                             }
@@ -1191,6 +1191,8 @@ mod tests {
         assert_eq!(tc.minutes, 15);
         assert_eq!(tc.seconds, 21);
         assert_eq!(tc.frames, 0);
+
+        let _ = "271m".parse::<Timecode>().expect("should parse");
     }
 
     #[test]
