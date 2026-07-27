@@ -13,7 +13,7 @@ impl InlineWidget for f32 {
         draw_segmented_display(
             ui,
             &[CHAR, CHAR, CHAR, CHAR, SEPR, CHAR, CHAR, CHAR],
-            &format!("{:+08.3}", self),
+            &format!("{:+08.3}", self.min(999.999)),
             ui.visuals().text_color(),
             scale,
         )
