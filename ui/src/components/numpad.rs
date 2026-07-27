@@ -143,7 +143,10 @@ where
                 self.clear_memstr(ui);
             }
             _ => {
-                self.push_char_to_memstr(ui, key.symbol_or_name().chars().next()?);
+                self.push_char_to_memstr(
+                    ui,
+                    key.symbol_or_name().chars().next()?.to_ascii_lowercase(),
+                );
             }
         }
         Some(())
@@ -202,38 +205,36 @@ where
 
         self.check_for_external_keyboard_input(ui);
 
-        egui::Frame::group(ui.style())
+        egui::Grid::new("ksui.numpad.sections")
             .show(ui, |ui| {
-                egui::Grid::new("ksui.numpad.sections").show(ui, |ui| {
-                    if self.side_keys.is_some() {
-                        ui.allocate_space(Vec2::ZERO);
-                    }
-                    crate::graphics::draw_segmented_display(
-                        ui,
-                        &[SEGMENTED_CHAR_WIDTH; 16],
-                        &memstr,
-                        if parsed_val.is_ok() {
-                            ui.visuals().text_color()
-                        } else {
-                            style::ERROR_COLOR
-                        },
-                        1.4,
-                    );
-                    ui.end_row();
+                if self.side_keys.is_some() {
+                    ui.allocate_space(Vec2::ZERO);
+                }
+                crate::graphics::draw_segmented_display(
+                    ui,
+                    &[SEGMENTED_CHAR_WIDTH; 16],
+                    &memstr,
+                    if parsed_val.is_ok() {
+                        ui.visuals().text_color()
+                    } else {
+                        style::ERROR_COLOR
+                    },
+                    1.4,
+                );
+                ui.end_row();
 
-                    if let Some(keys) = self.side_keys {
-                        egui::Grid::new("ksui.numpad.sidekeys")
-                            .spacing(SPACING)
-                            .show(ui, |ui| {
-                                for key in keys {
-                                    self.onscreen_key(ui, key);
-                                    ui.end_row();
-                                }
-                            });
-                    }
-                    self.digits_grid(ui);
-                    self.control_grid(ui);
-                });
+                if let Some(keys) = self.side_keys {
+                    egui::Grid::new("ksui.numpad.sidekeys")
+                        .spacing(SPACING)
+                        .show(ui, |ui| {
+                            for key in keys {
+                                self.onscreen_key(ui, key);
+                                ui.end_row();
+                            }
+                        });
+                }
+                self.digits_grid(ui);
+                self.control_grid(ui);
             })
             .response
     }
