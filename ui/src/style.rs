@@ -21,10 +21,9 @@ pub fn load_fonts(egui_ctx: &mut Context) {
 
     fonts.font_data.insert(
         "LTC".to_owned(),
-        std::sync::Arc::new(
-            // .ttf and .otf supported
-            FontData::from_static(include_bytes!("../font/VT323-Regular.ttf")),
-        ),
+        std::sync::Arc::new(FontData::from_static(include_bytes!(path!(
+            "font/VT323-Regular.ttf"
+        )))),
     );
 
     let ltc_family = egui::FontFamily::Name("LTC".into());

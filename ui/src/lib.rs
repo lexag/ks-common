@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate manifest_dir_macros;
 mod graphics;
 
 pub mod autoenum;
