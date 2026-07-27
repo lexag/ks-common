@@ -1,9 +1,10 @@
 #[macro_use]
 extern crate manifest_dir_macros;
+
+mod components;
 mod graphics;
 
 pub mod autoenum;
-pub mod components;
 pub mod interface;
 pub mod style;
 
