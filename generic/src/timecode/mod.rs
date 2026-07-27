@@ -665,7 +665,7 @@ impl FromStr for Timecode {
                                     val *= 10;
                                     val += c_val;
                                 }
-                                _ => {}
+                                _ => return Err(TimecodeError::InvalidConfiguration),
                             }
                         }
                         (hours, minutes, seconds, frames)
