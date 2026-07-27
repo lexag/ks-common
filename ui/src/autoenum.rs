@@ -69,7 +69,7 @@ where
 
 impl<T> ConfigurationWidget for T
 where
-    T: InlineWidgetAutoEnum + InlineWidgetAutoEnum + Clone + PartialEq + Display,
+    T: InlineWidgetAutoEnum + Clone + PartialEq + Display,
 {
     fn draw_configuration(&mut self, ui: &mut egui::Ui) -> egui::Response {
         if let Some(selection) = selector_list_value(ui, &T::options(), self, "") {

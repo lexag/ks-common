@@ -65,6 +65,21 @@ pub trait ConfigurationWidget {
     fn grid_contents(&mut self, ui: &mut egui::Ui);
 }
 
+pub trait AutoInlineWidgetMenu {
+    fn auto_inline_widget_menu(&mut self, ui: &mut egui::Ui) -> Response;
+}
+
+impl<T> AutoInlineWidgetMenu for T
+where
+    T: InlineWidgetMenu + ConfigurationWidget + Clone,
+{
+    fn auto_inline_widget_menu(&mut self, ui: &mut egui::Ui) -> Response {
+        self.clone().inline_widget_menu(ui, |ui| {
+            self.draw_configuration(ui);
+        })
+    }
+}
+
 pub trait InlineWidgetMenu {
     /// Main function for this trait. Call this from outside, and it handles the rest.
     fn inline_widget_menu(

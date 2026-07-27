@@ -1,9 +1,10 @@
 use crate::{
-    components::big_slider,
     graphics::{self, draw_segmented_display},
     interface::{ConfigurationWidget, InlineWidget},
     style,
 };
+
+use egui::Widget;
 
 const CHAR: f32 = graphics::SEGMENTED_CHAR_WIDTH;
 const SEPR: f32 = graphics::SEGMENTED_SEPR_WIDTH;
@@ -57,14 +58,6 @@ impl InlineWidget for u8 {
             ui.visuals().text_color(),
             scale,
         )
-    }
-}
-
-impl ConfigurationWidget for u8 {
-    fn grid_contents(&mut self, ui: &mut egui::Ui) {
-        if let Some(fraction) = big_slider(ui, (*self as f32) / 255.0) {
-            *self = (fraction * 255.0) as Self;
-        }
     }
 }
 
@@ -129,3 +122,43 @@ impl InlineWidget for char {
         )
     }
 }
+
+// impl ConfigurationWidget for positive integers
+macro_rules! impl_ConfigurationWidget_positive_int {
+    (for $($t:ty),+) => {
+        $(impl ConfigurationWidget for $t {
+            fn draw_configuration(&mut self, ui: &mut egui::Ui) -> egui::Response {
+                crate::components::numpad::Numpad::new(self).ui(ui)
+
+            }
+    fn grid_contents(&mut self, _: &mut egui::Ui) { unimplemented!()}
+        })*
+    }
+}
+// impl ConfigurationWidget for negative integers
+macro_rules! impl_ConfigurationWidget_negative_int {
+    (for $($t:ty),+) => {
+        $(impl ConfigurationWidget for $t {
+            fn draw_configuration(&mut self, ui: &mut egui::Ui) -> egui::Response {
+                crate::components::numpad::Numpad::new(self).with_sign().ui(ui)
+
+            }
+    fn grid_contents(&mut self, _: &mut egui::Ui) { unimplemented!()}
+        })*
+    }
+}
+// impl ConfigurationWidget for floats
+macro_rules! impl_ConfigurationWidget_float {
+    (for $($t:ty),+) => {
+        $(impl ConfigurationWidget for $t {
+            fn draw_configuration(&mut self, ui: &mut egui::Ui) -> egui::Response {
+                crate::components::numpad::Numpad::new(self).with_sign().with_decimal('.').ui(ui)
+
+            }
+    fn grid_contents(&mut self, _: &mut egui::Ui) { unimplemented!()}
+        })*
+    }
+}
+impl_ConfigurationWidget_positive_int!(for u8, u16, u32, u64, u128);
+impl_ConfigurationWidget_negative_int!(for i8, i16, i32, i64, i128);
+impl_ConfigurationWidget_float!(for f32, f64);
