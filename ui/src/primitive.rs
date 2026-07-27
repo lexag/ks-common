@@ -152,7 +152,7 @@ macro_rules! impl_ConfigurationWidget_float {
     (for $($t:ty),+) => {
         $(impl ConfigurationWidget for $t {
             fn draw_configuration(&mut self, ui: &mut egui::Ui) -> egui::Response {
-                crate::components::numpad::Numpad::new(self).with_sign().with_decimal('.').ui(ui)
+                crate::components::numpad::Numpad::new(self).with_sign().with_decimal(egui::Key::Period).ui(ui)
 
             }
     fn grid_contents(&mut self, _: &mut egui::Ui) { unimplemented!()}

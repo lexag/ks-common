@@ -1,13 +1,13 @@
 use crate::{components::SQUARE_BUTTON_SIZE, graphics::SEGMENTED_CHAR_WIDTH, style};
 use core::str::FromStr;
-use egui::{Vec2, Widget};
+use egui::{Key, Vec2, Widget};
 
 pub struct Numpad<'a, T>
 where
     T: FromStr,
 {
-    side_keys: Option<[char; 4]>,
-    keys: [Option<char>; 12],
+    side_keys: Option<[Key; 4]>,
+    keys: [Option<Key>; 12],
     row_width: usize,
 
     val: &'a mut T,
@@ -21,17 +21,17 @@ where
         Self {
             side_keys: None,
             keys: [
-                Some('7'),
-                Some('8'),
-                Some('9'),
-                Some('4'),
-                Some('5'),
-                Some('6'),
-                Some('1'),
-                Some('2'),
-                Some('3'),
+                Some(Key::Num7),
+                Some(Key::Num8),
+                Some(Key::Num9),
+                Some(Key::Num4),
+                Some(Key::Num5),
+                Some(Key::Num6),
+                Some(Key::Num1),
+                Some(Key::Num2),
+                Some(Key::Num3),
                 None,
-                Some('0'),
+                Some(Key::Num0),
                 None,
             ],
             val,
@@ -40,16 +40,16 @@ where
     }
 
     pub fn with_sign(mut self) -> Self {
-        self.keys[11] = Some('-');
+        self.keys[11] = Some(Key::Minus);
         self
     }
 
-    pub fn with_decimal(mut self, separator: char) -> Self {
+    pub fn with_decimal(mut self, separator: Key) -> Self {
         self.keys[9] = Some(separator);
         self
     }
 
-    pub fn with_side_keys(mut self, keys: [char; 4]) -> Self {
+    pub fn with_side_keys(mut self, keys: [Key; 4]) -> Self {
         self.side_keys = Some(keys);
         self
     }
@@ -80,32 +80,17 @@ where
         ui.memory_mut(|w| w.data.get_temp(memstr_id()).unwrap_or(String::new()))
     }
 
-    fn digits_grid(&self, mut memstr: String, ui: &mut egui::Ui)
+    fn digits_grid(&mut self, ui: &mut egui::Ui)
     where
         T: FromStr,
     {
         egui::Grid::new("ksui.numpad.grid")
             .spacing(SPACING)
             .show(ui, |ui| {
-                for (i, &button_char) in self.keys.iter().enumerate() {
+                for (i, &button_char) in self.keys.clone().iter().enumerate() {
                     match button_char {
                         Some(c) => {
-                            let button = egui::Button::new(c.to_string())
-                                .min_size(BUTTON_SIZE)
-                                .ui(ui);
-                            if button.clicked() {
-                                if c == '-' {
-                                    if memstr.starts_with('-') {
-                                        memstr =
-                                            memstr.strip_prefix('-').unwrap_or(&memstr).to_string();
-                                    } else {
-                                        memstr.insert(0, '-');
-                                    }
-                                    self.set_memstr(ui, &memstr);
-                                } else {
-                                    self.push_char_to_memstr(ui, c);
-                                }
-                            }
+                            self.onscreen_key(ui, c);
                         }
                         None => {
                             ui.allocate_space(BUTTON_SIZE);
@@ -118,6 +103,52 @@ where
             });
     }
 
+    fn onscreen_key(&mut self, ui: &mut egui::Ui, c: Key) {
+        let mut button = egui::Button::new(c.symbol_or_name())
+            .min_size(BUTTON_SIZE)
+            .frame(true);
+
+        if c == Key::Escape {
+            button = button.fill(style::ERROR_COLOR);
+        } else if c == Key::Enter {
+            button = button.fill(style::CUED_COLOR);
+        };
+
+        if button.ui(ui).clicked() {
+            self.press_key(ui, c);
+        }
+    }
+
+    fn press_key(&mut self, ui: &egui::Ui, key: Key) -> Option<()> {
+        match key {
+            Key::Minus => {
+                let mut memstr = self.get_memstr(ui);
+                if memstr.starts_with('-') {
+                    memstr = memstr.strip_prefix('-').unwrap_or(&memstr).to_string();
+                } else {
+                    memstr.insert(0, '-');
+                }
+                self.set_memstr(ui, &memstr);
+            }
+            Key::Backspace => {
+                self.pop_char_from_memstr(ui);
+            }
+            Key::Enter => {
+                if let Ok(val) = self.get_memstr(ui).parse::<T>() {
+                    *self.val = val;
+                    self.clear_memstr(ui);
+                }
+            }
+            Key::Escape => {
+                self.clear_memstr(ui);
+            }
+            _ => {
+                self.push_char_to_memstr(ui, key.symbol_or_name().chars().next()?);
+            }
+        }
+        Some(())
+    }
+
     fn control_grid(&mut self, ui: &mut egui::Ui)
     where
         T: FromStr,
@@ -125,34 +156,32 @@ where
         egui::Grid::new("ksui.numpad.controls")
             .spacing(SPACING)
             .show(ui, |ui| {
-                let backspace = egui::Button::new("Back").min_size(BUTTON_SIZE).ui(ui);
+                self.onscreen_key(ui, Key::Backspace);
                 ui.end_row();
-                let clear = egui::Button::new("Clear")
-                    .min_size(BUTTON_SIZE)
-                    .fill(style::ERROR_COLOR)
-                    .ui(ui);
+                self.onscreen_key(ui, Key::Escape);
                 ui.end_row();
-                let confirm = egui::Button::new("Confirm")
-                    .min_size(BUTTON_SIZE)
-                    .fill(style::CUED_COLOR)
-                    .ui(ui);
+                self.onscreen_key(ui, Key::Enter);
                 ui.end_row();
-
-                if backspace.clicked() {
-                    self.pop_char_from_memstr(ui);
-                }
-
-                if clear.clicked() {
-                    self.clear_memstr(ui);
-                }
-
-                if confirm.clicked()
-                    && let Ok(val) = self.get_memstr(ui).parse::<T>()
-                {
-                    *self.val = val;
-                    self.clear_memstr(ui);
-                }
             });
+    }
+
+    fn check_for_external_keyboard_input(&mut self, ui: &egui::Ui)
+    where
+        T: FromStr,
+    {
+        ui.memory_mut(|w| w.request_focus(ui.id()));
+        for &key in self
+            .keys
+            .clone()
+            .iter()
+            .flatten()
+            .chain(self.side_keys.clone().iter().flatten())
+            .chain([Key::Backspace, Key::Escape, Key::Enter].iter())
+        {
+            if ui.input(|i| i.key_pressed(key)) {
+                self.press_key(ui, key);
+            }
+        }
     }
 }
 
@@ -170,6 +199,8 @@ where
     fn ui(mut self, ui: &mut egui::Ui) -> egui::Response {
         let memstr = self.get_memstr(ui);
         let parsed_val = memstr.parse::<T>();
+
+        self.check_for_external_keyboard_input(ui);
 
         egui::Frame::group(ui.style())
             .show(ui, |ui| {
@@ -195,18 +226,12 @@ where
                             .spacing(SPACING)
                             .show(ui, |ui| {
                                 for key in keys {
-                                    if egui::Button::new(key.to_string())
-                                        .min_size(BUTTON_SIZE)
-                                        .ui(ui)
-                                        .clicked()
-                                    {
-                                        self.push_char_to_memstr(ui, key);
-                                    }
+                                    self.onscreen_key(ui, key);
                                     ui.end_row();
                                 }
                             });
                     }
-                    self.digits_grid(memstr, ui);
+                    self.digits_grid(ui);
                     self.control_grid(ui);
                 });
             })
