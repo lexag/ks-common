@@ -20,6 +20,7 @@ use crate::str::StaticString;
 use core::{
     fmt::{self, Display},
     hash::Hash,
+    str::FromStr,
 };
 
 /// SMPTE timecode frame rates
@@ -348,56 +349,6 @@ impl Timecode {
         })
     }
 
-    /// Parse a SMPTE timecode string.
-    ///
-    /// Accepts both "HH:MM:SS:FF" (non-drop frame, all colons) and
-    /// "HH:MM:SS;FF" (drop frame, semicolon before frames).
-    ///
-    /// The `frame_rate` parameter determines the frame rate; the separator
-    /// before the frame field determines whether drop-frame validation applies.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the string format is invalid or component values
-    /// are out of range.
-    pub fn from_string(s: &str, frame_rate: FrameRate) -> Result<Self, TimecodeError> {
-        let s = s.trim();
-        // Minimum length: "00:00:00:00" = 11 chars
-        if s.len() < 11 {
-            return Err(TimecodeError::InvalidConfiguration);
-        }
-
-        // Split on colons and semicolons. Expect exactly 4 parts.
-        let mut parts = s.split([':', ';']);
-
-        let hours: u8 = parts
-            .next()
-            .ok_or(TimecodeError::InvalidConfiguration)?
-            .parse()
-            .map_err(|_| TimecodeError::InvalidHours)?;
-        let minutes: u8 = parts
-            .next()
-            .ok_or(TimecodeError::InvalidConfiguration)?
-            .parse()
-            .map_err(|_| TimecodeError::InvalidMinutes)?;
-        let seconds: u8 = parts
-            .next()
-            .ok_or(TimecodeError::InvalidConfiguration)?
-            .parse()
-            .map_err(|_| TimecodeError::InvalidSeconds)?;
-        let frames: u8 = parts
-            .next()
-            .ok_or(TimecodeError::InvalidConfiguration)?
-            .parse()
-            .map_err(|_| TimecodeError::InvalidFrames)?;
-
-        if parts.count() != 0 {
-            return Err(TimecodeError::InvalidConfiguration);
-        }
-
-        Self::new(hours, minutes, seconds, frames, frame_rate)
-    }
-
     /// Create a `Timecode` directly from raw fields without constructor validation.
     ///
     /// This is intended for internal use in parsers and codecs where the
@@ -621,6 +572,157 @@ impl Timecode {
     /// Encode binary data directly
     pub fn encode_user_bits_binary(data: u32) -> u32 {
         data
+    }
+}
+
+impl FromStr for Timecode {
+    type Err = TimecodeError;
+
+    /// Parse a SMPTE timecode string, and various substrings and human-readable timecode formats.
+    /// If framerate is not encoded in string, a best-guess selection is made based on
+    /// drop-frame-separator and frame value (if present).
+    /// If a specific frame-rate is expected, use Self::from_str_and_rate or set frame rate
+    /// manually after string parsing with Self::convert_framerate
+    ///
+    /// Accepts the following formats:
+    /// - "HH:MM:SS:FF" (non-drop frame)
+    /// - "HH:MM:SS;FF" (drop frame)
+    /// - "MM:SS"
+    /// - "HH:MM:SS"
+    /// - Any combinations of <\d\d[hmfs]>, i.e. "12h34m", "43s", "1m2f". Multiple instances of the
+    /// unit will sum, i.e. 1m45s2m -> 00:03:45:00
+    /// - "0" (parses to 00:00:00:00)
+    /// - Any of the above with suffix "@rr" or " rr" (rr = framerate, 12 = 120fps)
+    ///
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the string format is invalid or component values
+    /// are out of range.
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        // helper functions
+        fn parse_next(
+            parts: &mut core::str::Split<'_, [char; 2]>,
+            timecode_error: TimecodeError,
+        ) -> Result<u8, TimecodeError> {
+            parts
+                .next()
+                .ok_or(TimecodeError::InvalidConfiguration)?
+                .parse()
+                .map_err(|_| timecode_error)
+        }
+
+        let s = s.trim();
+
+        // NOTE: This is not true, as one can make and parse arbitrarily long strings with
+        // 1m1m1m1m1m1m1m1m... to sum multiple times.
+        //// If framerate included, the longest str is "00:00:00:00@25" = 14 chars long.
+        //// Longer strings are not parseable
+        //if s.len() > 14 {
+        //    return Err(TimecodeError::InvalidConfiguration);
+        //}
+
+        // Framerate inclusion requires '@' or ' ' before framerate
+        let (time_str, fr_str) = s.split_once(['@', ' ']).unwrap_or((s, ""));
+
+        // Inclusion of semicolon indicates drop-frame
+        let drop_frame = time_str.contains(';');
+
+        // Split on colons and semicolons.
+        let mut parts = time_str.split([':', ';']);
+
+        let (mut hours, mut minutes, mut seconds, mut frames): (u8, u8, u8, u8) =
+            match parts.clone().count() {
+                1 => {
+                    if time_str == "0" {
+                        (0, 0, 0, 0)
+                    } else {
+                        let cs = time_str.chars();
+                        let mut val = 0_u8;
+                        let (mut hours, mut minutes, mut seconds, mut frames) = (0, 0, 0, 0);
+                        for c in cs {
+                            match c.to_ascii_lowercase() {
+                                'h' => {
+                                    hours += val;
+                                    val = 0;
+                                }
+                                'm' => {
+                                    minutes += val;
+                                    val = 0;
+                                }
+                                's' => {
+                                    seconds += val;
+                                    val = 0;
+                                }
+                                'f' => {
+                                    frames += val;
+                                    val = 0;
+                                }
+                                '0'..='9' => {
+                                    let Some(Ok(c_val)) = c.to_digit(10).map(u8::try_from) else {
+                                        return Err(TimecodeError::InvalidConfiguration);
+                                    };
+                                    val *= 10;
+                                    val += c_val;
+                                }
+                                _ => {}
+                            }
+                        }
+                        (hours, minutes, seconds, frames)
+                    }
+                }
+
+                2 => (
+                    // MM:SS
+                    0,
+                    parse_next(&mut parts, TimecodeError::InvalidMinutes)?,
+                    parse_next(&mut parts, TimecodeError::InvalidSeconds)?,
+                    0,
+                ),
+                3 => (
+                    // HH:MM:SS
+                    parse_next(&mut parts, TimecodeError::InvalidHours)?,
+                    parse_next(&mut parts, TimecodeError::InvalidMinutes)?,
+                    parse_next(&mut parts, TimecodeError::InvalidSeconds)?,
+                    0,
+                ),
+
+                4 => (
+                    // HH:MM:SS:FF
+                    parse_next(&mut parts, TimecodeError::InvalidHours)?,
+                    parse_next(&mut parts, TimecodeError::InvalidMinutes)?,
+                    parse_next(&mut parts, TimecodeError::InvalidSeconds)?,
+                    parse_next(&mut parts, TimecodeError::InvalidFrames)?,
+                ),
+                _ => return Err(TimecodeError::InvalidConfiguration),
+            };
+
+        let fps: u8 = if fr_str == "12" {
+            120
+        } else if !fr_str.is_empty() {
+            let Ok(fr) = fr_str.parse() else {
+                return Err(TimecodeError::InvalidFrameRate);
+            };
+            fr
+        } else {
+            *[24, 25, 30, 48, 50, 60, 120_u8]
+                .iter()
+                .filter(|&&fr| fr > frames)
+                .min()
+                .unwrap_or(&25) // fallback
+        };
+
+        let framerate = frame_rate_from_info(&FrameRateInfo { drop_frame, fps });
+
+        seconds += frames / fps;
+        minutes += seconds / 60;
+        hours += minutes / 60;
+        frames %= fps;
+        seconds %= 60;
+        minutes %= 60;
+        hours %= 24;
+
+        Self::new(hours, minutes, seconds, frames, framerate)
     }
 }
 
@@ -864,6 +966,24 @@ impl core::ops::Sub for TimecodeOffset {
     }
 }
 
+impl FromStr for TimecodeOffset {
+    type Err = TimecodeError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut cs = s.chars();
+        let is_negative = cs.clone().next() == Some('-');
+
+        if is_negative {
+            let _ = cs.next();
+        }
+
+        Ok(Self {
+            abs_time: cs.as_str().parse::<Timecode>()?,
+            is_negative,
+        })
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Error type
 // ---------------------------------------------------------------------------
@@ -882,6 +1002,8 @@ pub enum TimecodeError {
     InvalidFrames,
     /// Invalid drop frame timecode
     InvalidDropFrame,
+    /// Invalid frame rate
+    InvalidFrameRate,
     /// Sync word not found
     SyncNotFound,
     /// CRC error
@@ -908,6 +1030,7 @@ impl fmt::Display for TimecodeError {
             Self::InvalidSeconds => write!(f, "Invalid seconds value"),
             Self::InvalidFrames => write!(f, "Invalid frames value"),
             Self::InvalidDropFrame => write!(f, "Invalid drop frame timecode"),
+            Self::InvalidFrameRate => write!(f, "Invalid frame rate"),
             Self::SyncNotFound => write!(f, "Sync word not found"),
             Self::CrcError => write!(f, "CRC error"),
             Self::BufferTooSmall => write!(f, "Buffer too small"),
@@ -981,7 +1104,7 @@ mod tests {
 
     #[test]
     fn test_from_string_ndf() {
-        let tc = Timecode::from_string("01:02:03:04", FrameRate::Fps25).expect("should parse");
+        let tc = "01:02:03:04".parse::<Timecode>().expect("should parse");
         assert_eq!(tc.hours, 1);
         assert_eq!(tc.minutes, 2);
         assert_eq!(tc.seconds, 3);
@@ -991,19 +1114,122 @@ mod tests {
     #[test]
     fn test_from_string_df() {
         // Drop frame: semicolon before frames
-        let tc = Timecode::from_string("01:02:03;04", FrameRate::Fps2997DF).expect("should parse");
+        let tc = "01:02:03;04".parse::<Timecode>().expect("should parse");
         assert_eq!(tc.frames, 4);
         assert!(tc.frame_rate.drop_frame);
     }
 
     #[test]
-    fn test_from_string_invalid_too_short() {
-        assert!(Timecode::from_string("1:2:3:4", FrameRate::Fps25).is_err());
+    fn test_from_string_explicit_framerate() {
+        let tc = "01:02:03:04@25".parse::<Timecode>().expect("should parse");
+        let tc2 = "01:02:03:04 25".parse::<Timecode>().expect("should parse");
+        assert_eq!(tc.hours, 1);
+        assert_eq!(tc.minutes, 2);
+        assert_eq!(tc.seconds, 3);
+        assert_eq!(tc.frames, 4);
+        assert_eq!(tc.frame_rate.fps, 25);
+        assert_eq!(tc, tc2);
     }
 
     #[test]
-    fn test_from_string_invalid_parts() {
-        assert!(Timecode::from_string("01:02:03", FrameRate::Fps25).is_err());
+    fn test_from_string_h_m_s() {
+        let tc = "5:12:34".parse::<Timecode>().expect("should parse");
+        let tc2 = "05:12:34".parse::<Timecode>().expect("should parse");
+        assert_eq!(tc.hours, 5);
+        assert_eq!(tc.minutes, 12);
+        assert_eq!(tc.seconds, 34);
+        assert_eq!(tc.frames, 0);
+        assert_eq!(tc, tc2);
+    }
+
+    #[test]
+    fn test_from_string_m_s() {
+        let tc = "12:34".parse::<Timecode>().expect("should parse");
+        assert_eq!(tc.hours, 0);
+        assert_eq!(tc.minutes, 12);
+        assert_eq!(tc.seconds, 34);
+        assert_eq!(tc.frames, 0);
+    }
+
+    #[test]
+    fn test_from_string_explicit_hmsf() {
+        let tc = "12m34s".parse::<Timecode>().expect("should parse");
+        assert_eq!(tc.hours, 0);
+        assert_eq!(tc.minutes, 12);
+        assert_eq!(tc.seconds, 34);
+        assert_eq!(tc.frames, 0);
+    }
+
+    #[test]
+    fn test_from_string_explicit_hmsf_add() {
+        let tc = "12m34s15m18s".parse::<Timecode>().expect("should parse");
+        assert_eq!(tc.hours, 0);
+        assert_eq!(tc.minutes, 12 + 15);
+        assert_eq!(tc.seconds, 34 + 18);
+        assert_eq!(tc.frames, 0);
+    }
+
+    #[test]
+    fn test_from_string_0() {
+        let tc = "0".parse::<Timecode>().expect("should parse");
+        assert_eq!(tc.hours, 0);
+        assert_eq!(tc.minutes, 0);
+        assert_eq!(tc.seconds, 0);
+        assert_eq!(tc.frames, 0);
+    }
+
+    #[test]
+    fn test_from_string_explicit_hmsf_wrap() {
+        let tc = "59m59s24f1f@25".parse::<Timecode>().expect("should parse");
+        assert_eq!(tc.hours, 1);
+        assert_eq!(tc.minutes, 0);
+        assert_eq!(tc.seconds, 0);
+        assert_eq!(tc.frames, 0);
+
+        let tc = "56m23s18m58s".parse::<Timecode>().expect("should parse");
+        assert_eq!(tc.hours, 1);
+        assert_eq!(tc.minutes, 15);
+        assert_eq!(tc.seconds, 21);
+        assert_eq!(tc.frames, 0);
+    }
+
+    #[test]
+    fn test_offset_from_string() {
+        let tc = "59m59s24f1f@25"
+            .parse::<TimecodeOffset>()
+            .expect("should parse");
+        assert_eq!(tc.abs_time.hours, 1);
+        assert_eq!(tc.abs_time.minutes, 0);
+        assert_eq!(tc.abs_time.seconds, 0);
+        assert_eq!(tc.abs_time.frames, 0);
+        assert!(!tc.is_negative);
+
+        let tc = "56m23s18m58s"
+            .parse::<TimecodeOffset>()
+            .expect("should parse");
+        assert_eq!(tc.abs_time.hours, 1);
+        assert_eq!(tc.abs_time.minutes, 15);
+        assert_eq!(tc.abs_time.seconds, 21);
+        assert_eq!(tc.abs_time.frames, 0);
+        assert!(!tc.is_negative);
+
+        let tc = "-59m59s24f1f@25"
+            .parse::<TimecodeOffset>()
+            .expect("should parse");
+        assert_eq!(tc.abs_time.hours, 1);
+        assert_eq!(tc.abs_time.minutes, 0);
+        assert_eq!(tc.abs_time.seconds, 0);
+        assert_eq!(tc.abs_time.frames, 0);
+        assert!(tc.is_negative);
+
+        let tc = "-01:15:21:00"
+            .parse::<TimecodeOffset>()
+            .expect("should parse");
+        assert_eq!(tc.abs_time.hours, 1);
+        assert_eq!(tc.abs_time.minutes, 15);
+        assert_eq!(tc.abs_time.seconds, 21);
+        assert_eq!(tc.abs_time.frames, 0);
+        assert!(tc.is_negative);
     }
 
     #[test]
