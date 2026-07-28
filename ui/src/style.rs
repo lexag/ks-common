@@ -25,12 +25,61 @@ pub fn load_fonts(egui_ctx: &mut Context) {
             "font/VT323-Regular.ttf"
         )))),
     );
+    fonts.font_data.insert(
+        "IBMPlexSans".to_owned(),
+        std::sync::Arc::new(FontData::from_static(include_bytes!(path!(
+            "font/IBMPlexSans-Regular.ttf"
+        )))),
+    );
+    fonts.font_data.insert(
+        "IBMPlexMono".to_owned(),
+        std::sync::Arc::new(FontData::from_static(include_bytes!(path!(
+            "font/IBMPlexMono-Regular.ttf"
+        )))),
+    );
+    fonts.font_data.insert(
+        "IBMPlexMonoBold".to_owned(),
+        std::sync::Arc::new(FontData::from_static(include_bytes!(path!(
+            "font/IBMPlexMono-Bold.ttf"
+        )))),
+    );
 
-    let ltc_family = egui::FontFamily::Name("LTC".into());
-
-    fonts.families.insert(ltc_family, vec!["LTC".to_owned()]);
+    fonts.families.insert(
+        FontFamily::Name("PlexMono".into()),
+        vec!["IBMPlexMono".to_owned()],
+    );
+    fonts.families.insert(
+        FontFamily::Name("PlexMonoBold".into()),
+        vec!["IBMPlexMonoBold".to_owned()],
+    );
+    fonts.families.insert(
+        FontFamily::Name("Plex".into()),
+        vec!["IBMPlexSans".to_owned()],
+    );
+    fonts
+        .families
+        .insert(FontFamily::Name("LTC".into()), vec!["LTC".to_owned()]);
 
     egui_ctx.set_fonts(fonts);
+}
+
+pub fn font_menu() -> FontId {
+    FontId::new(13.0, FontFamily::Name("Plex".into()))
+}
+pub fn font_label() -> FontId {
+    FontId::new(14.0, FontFamily::Name("Plex".into()))
+}
+pub fn font_button() -> FontId {
+    FontId::new(16.0, FontFamily::Name("PlexMono".into()))
+}
+pub fn font_numeral_thin() -> FontId {
+    FontId::new(20.0, FontFamily::Name("PlexMono".into()))
+}
+pub fn font_numeral() -> FontId {
+    FontId::new(20.0, FontFamily::Name("PlexMonoBold".into()))
+}
+pub fn font_critical() -> FontId {
+    FontId::new(28.0, FontFamily::Name("Plex".into()))
 }
 
 pub fn style() -> Style {
