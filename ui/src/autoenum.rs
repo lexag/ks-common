@@ -72,7 +72,7 @@ where
     T: InlineWidgetAutoEnum + Clone + PartialEq + Display,
 {
     fn draw_configuration(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        if let Some(selection) = selector_list_value(ui, &T::options(), self, "") {
+        if let Some(selection) = selector_list_value(ui, &T::options(), self) {
             *self = selection;
         }
         // FIXME: this is not the right response, but we've kind of painted ourselves into a corner

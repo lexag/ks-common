@@ -9,7 +9,6 @@ pub fn selector_list_index<T>(
     ui: &mut egui::Ui,
     options: &[T],
     selected_idx: Option<usize>,
-    label: &str,
 ) -> Option<usize>
 where
     T: Display,
@@ -45,12 +44,7 @@ where
     clicked
 }
 
-pub fn selector_list_value<T>(
-    ui: &mut egui::Ui,
-    options: &[T],
-    selected_value: &T,
-    label: &str,
-) -> Option<T>
+pub fn selector_list_value<T>(ui: &mut egui::Ui, options: &[T], selected_value: &T) -> Option<T>
 where
     T: Display + PartialEq + Clone,
 {
@@ -58,7 +52,6 @@ where
         ui,
         options,
         options.iter().position(|v| v == selected_value),
-        label,
     ) {
         return Some(options[i].clone());
     }
