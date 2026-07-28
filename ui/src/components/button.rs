@@ -1,31 +1,45 @@
 use crate::style::{self, CORNER_RADIUS, auto_bg_stroke, auto_fg_fill};
-use egui::{Align2, Color32, Rect, Sense, Vec2, Widget, vec2};
+use egui::{Align2, Color32, Key, Rect, Sense, Vec2, Widget, vec2};
 use material_icons::Icon;
 
-pub struct Button<'a> {
-    text: &'a str,
+pub struct Button {
+    text: String,
     icon: Option<char>,
     override_fill: Option<Color32>,
     indicator: Option<Color32>,
 }
 
-impl<'a> Button<'a> {
+impl Button {
     pub(crate) const SQUARE_BUTTON_WIDTH: f32 = 64.0;
 
     const SIZE: Vec2 = Vec2::splat(Self::SQUARE_BUTTON_WIDTH);
 
-    pub fn new(text: &'a str) -> Self {
-        let icon = if text.len() == 1 {
-            text.chars().next()
+    pub fn new(text: impl ToString) -> Self {
+        let s = text.to_string();
+        let icon = if s.chars().count() == 1 {
+            s.chars().next()
         } else {
             None
         };
         Self {
-            text,
+            text: s,
             icon,
             override_fill: None,
             indicator: None,
         }
+    }
+
+    pub fn keyboard_key(key: Key) -> Self {
+        Self::new(match key {
+            Key::Backspace => Icon::Backspace.to_string(),
+            Key::Enter => Icon::CheckCircle.to_string(),
+            Key::Escape => Icon::Cancel.to_string(),
+            Key::ArrowUp => Icon::ArrowUpward.to_string(),
+            Key::ArrowDown => Icon::ArrowDownward.to_string(),
+            Key::ArrowLeft => Icon::ArrowLeft.to_string(),
+            Key::ArrowRight => Icon::ArrowRight.to_string(),
+            k => k.symbol_or_name().to_string(),
+        })
     }
 
     pub fn fill(mut self, col: Color32) -> Self {
@@ -46,7 +60,7 @@ impl<'a> Button<'a> {
     }
 }
 
-impl<'a> Widget for Button<'a> {
+impl Widget for Button {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let (resp, p) = ui.allocate_painter(Self::SIZE, Sense::click());
         let body_rect = resp.rect;
@@ -107,6 +121,30 @@ impl<'a> Widget for Button<'a> {
             }
         }
 
+        resp
+    }
+}
+
+pub struct ToggleButton<'a> {
+    val: &'a mut bool,
+    button: Button,
+}
+
+impl<'a> ToggleButton<'a> {
+    pub fn new(val: &'a mut bool, text: impl ToString, indicator_color: Color32) -> Self {
+        Self {
+            button: Button::new(text).indicator(val.then_some(indicator_color)),
+            val,
+        }
+    }
+}
+
+impl<'a> Widget for ToggleButton<'a> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let resp = self.button.ui(ui);
+        if resp.clicked() {
+            *self.val = !*self.val;
+        }
         resp
     }
 }
