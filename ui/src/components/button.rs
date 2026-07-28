@@ -7,6 +7,7 @@ pub struct Button {
     icon: Option<char>,
     override_fill: Option<Color32>,
     indicator: Option<Color32>,
+    width: f32,
 }
 
 impl Button {
@@ -26,6 +27,7 @@ impl Button {
             icon,
             override_fill: None,
             indicator: None,
+            width: Self::SQUARE_BUTTON_WIDTH,
         }
     }
 
@@ -40,6 +42,16 @@ impl Button {
             Key::ArrowRight => Icon::ArrowRight.to_string(),
             k => k.symbol_or_name().to_string(),
         })
+    }
+
+    pub fn wide(text: impl ToString) -> Self {
+        Self {
+            text: text.to_string(),
+            icon: None,
+            override_fill: None,
+            indicator: None,
+            width: 3.0 * Self::SQUARE_BUTTON_WIDTH + 2.0 * style::spacing().item_spacing.x,
+        }
     }
 
     pub fn fill(mut self, col: Color32) -> Self {
@@ -62,7 +74,8 @@ impl Button {
 
 impl Widget for Button {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let (resp, p) = ui.allocate_painter(Self::SIZE, Sense::click());
+        let (resp, p) =
+            ui.allocate_painter(vec2(self.width, Self::SQUARE_BUTTON_WIDTH), Sense::click());
         let body_rect = resp.rect;
         let indicator_center = body_rect.lerp_inside([0.5, 0.8]);
 

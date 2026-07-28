@@ -3,23 +3,23 @@ use std::fmt::Display;
 
 #[derive(Clone, PartialEq)]
 enum ShortEnum {
-    First,
-    Second,
-    Third,
+    A,
+    B,
+    C,
 }
 
 impl InlineWidgetAutoEnum for ShortEnum {
     fn options() -> Vec<Self> {
-        vec![Self::First, Self::Second, Self::Third]
+        vec![Self::A, Self::B, Self::C]
     }
 }
 
 impl Display for ShortEnum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::First => write!(f, "First"),
-            Self::Second => write!(f, "Second"),
-            Self::Third => write!(f, "Third"),
+            Self::A => write!(f, "A"),
+            Self::B => write!(f, "B"),
+            Self::C => write!(f, "C"),
         }
     }
 }
@@ -120,19 +120,21 @@ impl Display for LongEnum {
 }
 
 pub fn demo_autoenum(ui: &mut egui::Ui) {
-    let mut val = ui.memory(|r| {
-        r.data
-            .get_temp::<(ShortEnum, LongEnum)>(ui.id())
-            .unwrap_or((ShortEnum::First, LongEnum::Aardvark))
-    });
+    ui.vertical(|ui| {
+        let mut val = ui.memory(|r| {
+            r.data
+                .get_temp::<(ShortEnum, LongEnum)>(ui.id())
+                .unwrap_or((ShortEnum::A, LongEnum::Aardvark))
+        });
 
-    val.0.autoenum_inline_widget(ui, "Short RO");
-    val.0.autoenum_inline_widget_menu(ui, "Short RW");
-    val.1.autoenum_inline_widget(ui, "Long RO");
-    val.1.autoenum_inline_widget_menu(ui, "Long RW");
+        val.0.autoenum_inline_widget(ui, "Short RO");
+        val.0.autoenum_inline_widget_menu(ui, "Short RW");
+        val.1.autoenum_inline_widget(ui, "Long RO");
+        val.1.autoenum_inline_widget_menu(ui, "Long RW");
 
-    ui.memory_mut(|w| {
-        *w.data
-            .get_temp_mut_or(ui.id(), (ShortEnum::First, LongEnum::Aardvark)) = val
+        ui.memory_mut(|w| {
+            *w.data
+                .get_temp_mut_or(ui.id(), (ShortEnum::A, LongEnum::Aardvark)) = val
+        });
     });
 }

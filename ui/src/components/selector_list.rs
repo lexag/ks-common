@@ -1,9 +1,9 @@
 use egui::Widget;
 use std::fmt::Display;
 
-use crate::components::SELECTOR_LIST_MIN_HEIGHT;
-use crate::components::SELECTOR_LIST_MIN_ITEM_HEIGHT;
-use crate::components::SELECTOR_LIST_WIDTH;
+use crate::components::Button;
+use crate::components::SquarishGrid;
+use crate::style;
 
 pub fn selector_list_index<T>(
     ui: &mut egui::Ui,
@@ -14,30 +14,34 @@ pub fn selector_list_index<T>(
 where
     T: Display,
 {
+    let option_strings = options.iter().map(|s| s.to_string());
+
+    let max_strlen = option_strings
+        .clone()
+        .map(|s| s.len())
+        .max()
+        .unwrap_or_default();
+
     let mut clicked = None;
-    ui.vertical(|ui| {
-        ui.heading(label);
-        egui::Frame::group(ui.style()).show(ui, |ui| {
-            ui.set_min_height(SELECTOR_LIST_MIN_HEIGHT);
-            ui.set_width(SELECTOR_LIST_WIDTH);
-            egui::ScrollArea::vertical().id_salt(label).show(ui, |ui| {
-                ui.vertical_centered_justified(|ui| {
-                    for (i, option) in options.iter().enumerate() {
-                        let label =
-                            egui::Button::selectable(Some(i) == selected_idx, option.to_string())
-                                .wrap()
-                                .min_size(
-                                    [SELECTOR_LIST_WIDTH, SELECTOR_LIST_MIN_ITEM_HEIGHT].into(),
-                                )
-                                .ui(ui);
-                        if label.clicked() {
-                            clicked = Some(i);
-                        }
-                    }
-                });
+
+    let mut grid = SquarishGrid::new(options.len());
+
+    grid.show(ui, |ui, grid| {
+        for (i, option) in option_strings.enumerate() {
+            grid.add(ui, |ui| {
+                let button = if max_strlen > 4 {
+                    Button::wide(option)
+                } else {
+                    Button::new(option)
+                }
+                .indicator((Some(i) == selected_idx).then_some(style::ACCENT_COLOR));
+                if button.ui(ui).clicked() {
+                    clicked = Some(i);
+                }
             });
-        });
+        }
     });
+
     clicked
 }
 
