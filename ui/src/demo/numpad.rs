@@ -1,4 +1,4 @@
-use crate::{components::numpad::Numpad, demo::inline_primitive::demo_inline_primitive_displays};
+use crate::{components::Numpad, demo::inline_primitive::demo_inline_primitive_displays};
 use egui::{Key, Widget};
 
 pub(crate) fn demo_numpad(ui: &mut egui::Ui) {

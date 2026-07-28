@@ -58,7 +58,7 @@ impl InlineWidget for TimecodeOffset {
 impl ConfigurationWidget for Timecode {
     fn grid_contents(&mut self, ui: &mut egui::Ui) {
         let fps = self.frame_rate;
-        crate::components::numpad::Numpad::new(self)
+        crate::components::Numpad::new(self)
             .with_side_keys([Key::H, Key::M, Key::S, Key::F])
             .with_decimal(Key::Colon)
             .ui(ui);
@@ -69,7 +69,7 @@ impl ConfigurationWidget for Timecode {
 impl ConfigurationWidget for TimecodeOffset {
     fn grid_contents(&mut self, ui: &mut egui::Ui) {
         let fps = self.abs_time.frame_rate;
-        crate::components::numpad::Numpad::new(self)
+        crate::components::Numpad::new(self)
             .with_side_keys([Key::H, Key::M, Key::S, Key::F])
             .with_decimal(Key::Colon)
             .with_sign()

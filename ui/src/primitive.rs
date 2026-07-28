@@ -128,7 +128,7 @@ macro_rules! impl_ConfigurationWidget_positive_int {
     (for $($t:ty),+) => {
         $(impl ConfigurationWidget for $t {
             fn grid_contents(&mut self, ui: &mut egui::Ui) {
-                crate::components::numpad::Numpad::new(self).ui(ui);
+                crate::components::Numpad::new(self).ui(ui);
 
             }
         })*
@@ -139,7 +139,7 @@ macro_rules! impl_ConfigurationWidget_negative_int {
     (for $($t:ty),+) => {
         $(impl ConfigurationWidget for $t {
             fn grid_contents(&mut self, ui: &mut egui::Ui) {
-                crate::components::numpad::Numpad::new(self).with_sign().ui(ui);
+                crate::components::Numpad::new(self).with_sign().ui(ui);
 
             }
         })*
@@ -150,7 +150,7 @@ macro_rules! impl_ConfigurationWidget_float {
     (for $($t:ty),+) => {
         $(impl ConfigurationWidget for $t {
             fn grid_contents(&mut self, ui: &mut egui::Ui) {
-                crate::components::numpad::Numpad::new(self).with_sign().with_decimal(egui::Key::Period).ui(ui);
+                crate::components::Numpad::new(self).with_sign().with_decimal(egui::Key::Period).ui(ui);
 
             }
         })*
