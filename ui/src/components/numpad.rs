@@ -1,6 +1,7 @@
-use crate::{components::SQUARE_BUTTON_SIZE, graphics::SEGMENTED_CHAR_WIDTH, style};
+use crate::graphics::SEGMENTED_CHAR_WIDTH;
+use crate::style;
 use core::str::FromStr;
-use egui::{Key, Sense, Vec2, Widget};
+use egui::{Key, Vec2, Widget};
 
 pub struct Numpad<'a, T>
 where
@@ -105,9 +106,7 @@ where
     }
 
     fn onscreen_key(&mut self, ui: &mut egui::Ui, c: Key) {
-        let mut button = egui::Button::new(c.symbol_or_name())
-            .min_size(BUTTON_SIZE)
-            .sense(Sense::click_and_drag());
+        let mut button = crate::components::Button::new(c.symbol_or_name());
         if c == Key::Escape {
             button = button.fill(style::ERROR_COLOR);
         } else if c == Key::Enter {
@@ -193,7 +192,8 @@ fn memstr_id() -> egui::Id {
     egui::Id::new("ksui.numpad.memstr")
 }
 
-const BUTTON_SIZE: Vec2 = Vec2::splat(SQUARE_BUTTON_SIZE);
+// FIXME: use actual buttons
+const BUTTON_SIZE: Vec2 = Vec2::splat(64.0);
 const SPACING: Vec2 = Vec2::splat(8.0);
 
 impl<'a, T> Widget for Numpad<'a, T>

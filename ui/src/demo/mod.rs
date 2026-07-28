@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+mod buttons;
 mod inline_primitive;
 mod inline_primitive_menu;
 mod numpad;
@@ -10,6 +11,7 @@ pub fn demo_ui(ui: &mut egui::Ui) {
         ui.horizontal_top(|ui| {
             inline_primitive_menu::demo_inline_primitive_menu(ui);
             timecode::demo_timecode(ui);
+            buttons::demo_buttons(ui);
         });
     });
 }
