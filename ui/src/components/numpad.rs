@@ -1,5 +1,5 @@
-use crate::graphics::SEGMENTED_CHAR_WIDTH;
 use crate::style;
+use crate::{components::Button, graphics::SEGMENTED_CHAR_WIDTH};
 use core::str::FromStr;
 use egui::{Key, Vec2, Widget};
 
@@ -92,7 +92,9 @@ where
                 for (i, &button_char) in self.keys.clone().iter().enumerate() {
                     match button_char {
                         Some(c) => {
-                            self.onscreen_key(ui, c);
+                            if Button::keyboard_key(c).ui(ui).clicked() {
+                                self.press_key(ui, c);
+                            };
                         }
                         None => {
                             ui.allocate_space(BUTTON_SIZE);
@@ -159,12 +161,12 @@ where
             .striped(false)
             .spacing(SPACING)
             .show(ui, |ui| {
-                self.onscreen_key(ui, Key::Backspace);
-                ui.end_row();
-                self.onscreen_key(ui, Key::Escape);
-                ui.end_row();
-                self.onscreen_key(ui, Key::Enter);
-                ui.end_row();
+                for key in [Key::Backspace, Key::Escape, Key::Enter] {
+                    if Button::keyboard_key(key).ui(ui).clicked() {
+                        self.press_key(ui, key);
+                    };
+                    ui.end_row();
+                }
             });
     }
 
