@@ -6,16 +6,11 @@ use egui::Response;
 /// Can be text-based or visual.
 pub trait InlineWidget {
     /// Render function for this trait
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response;
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response;
 
     /// Main function for this trait. Call this from outside, and it handles the rest.
-    fn inline_widget(&mut self, ui: &mut egui::Ui) -> egui::Response {
-        self.inline_widget_scaled(ui, 1.4)
-    }
-
-    /// Alternative function, allowing non-standard scale for this widget
-    fn inline_widget_scaled(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
-        let widget = self.draw(ui, scale);
+    fn inline_widget(&mut self, ui: &mut egui::Ui, label: impl ToString) -> egui::Response {
+        let widget = self.draw(ui, label.to_string());
         if widget.clicked() {
             self.on_click()
         }
@@ -66,15 +61,15 @@ pub trait ConfigurationWidget {
 }
 
 pub trait AutoInlineWidgetMenu {
-    fn auto_inline_widget_menu(&mut self, ui: &mut egui::Ui) -> Response;
+    fn auto_inline_widget_menu(&mut self, ui: &mut egui::Ui, label: impl ToString) -> Response;
 }
 
 impl<T> AutoInlineWidgetMenu for T
 where
     T: InlineWidgetMenu + ConfigurationWidget + Clone,
 {
-    fn auto_inline_widget_menu(&mut self, ui: &mut egui::Ui) -> Response {
-        self.clone().inline_widget_menu(ui, |ui| {
+    fn auto_inline_widget_menu(&mut self, ui: &mut egui::Ui, label: impl ToString) -> Response {
+        self.clone().inline_widget_menu(ui, label, |ui| {
             self.draw_configuration(ui);
         })
     }
@@ -85,6 +80,7 @@ pub trait InlineWidgetMenu {
     fn inline_widget_menu(
         &mut self,
         ui: &mut egui::Ui,
+        label: impl ToString,
         add_contents: impl FnOnce(&mut egui::Ui),
     ) -> Response;
 }
@@ -96,9 +92,10 @@ where
     fn inline_widget_menu(
         &mut self,
         ui: &mut egui::Ui,
+        label: impl ToString,
         add_contents: impl FnOnce(&mut egui::Ui),
     ) -> Response {
-        let response = self.inline_widget(ui);
+        let response = self.inline_widget(ui, label);
         let _ = egui::Popup::menu(&response)
             .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
             .info(egui::UiStackInfo::new(egui::UiKind::Menu))

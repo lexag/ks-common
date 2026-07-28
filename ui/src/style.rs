@@ -117,7 +117,7 @@ fn interaction() -> Interaction {
     }
 }
 
-fn spacing() -> Spacing {
+pub(crate) fn spacing() -> Spacing {
     Spacing {
         item_spacing: vec2(8.0, 6.0),
 

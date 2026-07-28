@@ -10,37 +10,37 @@ const CHAR: f32 = graphics::SEGMENTED_CHAR_WIDTH;
 const SEPR: f32 = graphics::SEGMENTED_SEPR_WIDTH;
 
 impl InlineWidget for f32 {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         draw_segmented_display(
             ui,
-            &[CHAR, CHAR, CHAR, CHAR, SEPR, CHAR, CHAR, CHAR],
-            &format!("{:+08.3}", self.min(999.999)),
+            8,
+            &format!("{}", self),
             ui.visuals().text_color(),
-            scale,
+            label,
         )
     }
 }
 
 impl InlineWidget for f64 {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         draw_segmented_display(
             ui,
-            &[CHAR, CHAR, CHAR, CHAR, SEPR, CHAR, CHAR, CHAR],
-            &format!("{:+08.3}", self.min(999.999)),
+            8,
+            &format!("{}", self),
             ui.visuals().text_color(),
-            scale,
+            label,
         )
     }
 }
 
 impl InlineWidget for bool {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         draw_segmented_display(
             ui,
-            &[SEPR, CHAR, SEPR],
+            3,
             if *self { " X " } else { "   " },
             style::ACCENT_COLOR,
-            scale,
+            label,
         )
     }
 
@@ -50,75 +50,73 @@ impl InlineWidget for bool {
 }
 
 impl InlineWidget for u8 {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         draw_segmented_display(
             ui,
-            &[CHAR, CHAR, CHAR],
+            3,
             &format!("{: >3}", self),
             ui.visuals().text_color(),
-            scale,
+            label,
         )
     }
 }
 
 impl InlineWidget for u16 {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         draw_segmented_display(
             ui,
-            &[CHAR, CHAR, CHAR, CHAR, CHAR],
+            5,
             &format!("{: >5}", self),
             ui.visuals().text_color(),
-            scale,
+            label,
         )
     }
 }
 
 impl InlineWidget for u32 {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         draw_segmented_display(
             ui,
-            &[CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR],
+            10,
             &format!("{: >10}", self),
             ui.visuals().text_color(),
-            scale,
+            label,
         )
     }
 }
 
 impl InlineWidget for i16 {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         draw_segmented_display(
             ui,
-            &[CHAR, CHAR, CHAR, CHAR, CHAR, CHAR],
+            6,
             &format!("{}{: >5}", if *self < 0 { '-' } else { ' ' }, self.abs()),
             ui.visuals().text_color(),
-            scale,
+            label,
         )
     }
 }
 
 impl InlineWidget for i32 {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         draw_segmented_display(
             ui,
-            &[
-                CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR, CHAR,
-            ],
+            11,
             &format!("{}{: >10}", if *self < 0 { '-' } else { ' ' }, self.abs()),
             ui.visuals().text_color(),
-            scale,
+            label,
         )
     }
 }
 
 impl InlineWidget for char {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         draw_segmented_display(
             ui,
-            &[SEPR, CHAR, SEPR],
+            3,
             &format!(" {} ", self),
             ui.visuals().text_color(),
-            scale,
+            label,
         )
     }
 }

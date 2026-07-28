@@ -19,18 +19,18 @@ pub trait InlineWidgetAutoEnum {
         None
     }
 
-    fn autoenum_inline_widget(&mut self, ui: &mut egui::Ui)
+    fn autoenum_inline_widget(&mut self, ui: &mut egui::Ui, label: impl ToString)
     where
         Self: InlineWidget,
     {
-        self.inline_widget(ui);
+        self.inline_widget(ui, label);
     }
 
-    fn autoenum_inline_widget_menu(&mut self, ui: &mut egui::Ui)
+    fn autoenum_inline_widget_menu(&mut self, ui: &mut egui::Ui, label: impl ToString)
     where
         Self: InlineWidgetMenu + Clone + ConfigurationWidget,
     {
-        self.clone().inline_widget_menu(ui, |ui| {
+        self.clone().inline_widget_menu(ui, label, |ui| {
             self.draw_configuration(ui);
         });
     }
@@ -40,7 +40,7 @@ impl<T> InlineWidget for T
 where
     T: InlineWidgetAutoEnum + Display,
 {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         let options = T::options();
         let text = self.text().unwrap_or(self.to_string());
         let lengths = options
@@ -59,10 +59,10 @@ where
 
         draw_segmented_display(
             ui,
-            &[graphics::SEGMENTED_CHAR_WIDTH; 32][..max_width],
+            max_width,
             &text,
             self.color().unwrap_or(ui.visuals().text_color()),
-            scale,
+            label,
         )
     }
 }

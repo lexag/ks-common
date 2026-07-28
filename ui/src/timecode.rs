@@ -8,49 +8,40 @@ use ks_common_generic::smpte::{Timecode, TimecodeOffset};
 
 const CHAR: f32 = graphics::SEGMENTED_CHAR_WIDTH;
 const SEPR: f32 = graphics::SEGMENTED_SEPR_WIDTH;
-const CHAR_WIDTHS: &[f32] = &[
-    CHAR, CHAR, SEPR, CHAR, CHAR, SEPR, CHAR, CHAR, SEPR, CHAR, CHAR, SEPR, CHAR, CHAR,
-];
 
 impl InlineWidget for Timecode {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         draw_segmented_display(
             ui,
-            CHAR_WIDTHS,
-            &format!("{} {}", self, self.frame_rate.fps),
+            14,
+            &format!("[{}] {}", self.frame_rate.fps, self),
             style::ACCENT_COLOR,
-            scale,
+            label,
         )
     }
 }
 
 impl InlineWidget for Option<Timecode> {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         match self {
-            Some(tc) => tc.draw(ui, scale),
-            None => draw_segmented_display(
-                ui,
-                CHAR_WIDTHS,
-                "   NO    TC   ",
-                style::WARNING_COLOR,
-                scale,
-            ),
+            Some(tc) => tc.draw(ui, label),
+            None => draw_segmented_display(ui, 14, "   NO    TC   ", style::WARNING_COLOR, label),
         }
     }
 }
 
 impl InlineWidget for TimecodeOffset {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         draw_segmented_display(
             ui,
-            CHAR_WIDTHS,
+            14,
             &format!(
-                " {} {}",
+                "{} {}",
                 if self.is_negative { '-' } else { '+' },
                 self.abs_time
             ),
             ui.visuals().text_color(),
-            scale,
+            label,
         )
     }
 }

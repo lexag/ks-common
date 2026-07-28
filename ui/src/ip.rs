@@ -11,14 +11,11 @@ const CHAR: f32 = graphics::SEGMENTED_CHAR_WIDTH;
 const SEPR: f32 = graphics::SEGMENTED_SEPR_WIDTH;
 
 impl InlineWidget for SocketAddrV4 {
-    fn draw(&mut self, ui: &mut egui::Ui, scale: f32) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
         let octets = self.ip().octets();
         draw_segmented_display(
             ui,
-            &[
-                CHAR, CHAR, CHAR, SEPR, CHAR, CHAR, CHAR, SEPR, CHAR, CHAR, CHAR, SEPR, CHAR, CHAR,
-                CHAR, SEPR, CHAR, CHAR, CHAR, CHAR, CHAR,
-            ],
+            21,
             &format!(
                 "{:>3}.{:>3}.{:>3}.{:>3}:{:>5}",
                 octets[0],
@@ -28,7 +25,7 @@ impl InlineWidget for SocketAddrV4 {
                 self.port()
             ),
             style::ACCENT_COLOR,
-            scale,
+            label,
         )
     }
 }

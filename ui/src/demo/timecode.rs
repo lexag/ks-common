@@ -10,11 +10,11 @@ pub(crate) fn demo_timecode(ui: &mut egui::Ui) {
                 .unwrap_or((Timecode::default(), TimecodeOffset::default()))
         });
 
-        val.auto_inline_widget_menu(ui);
+        val.auto_inline_widget_menu(ui, "timecode");
 
-        offs.auto_inline_widget_menu(ui);
+        offs.auto_inline_widget_menu(ui, "offset");
 
-        (val + offs).unwrap_or_default().inline_widget(ui);
+        (val + offs).unwrap_or_default().inline_widget(ui, "sum");
 
         ui.memory_mut(|w| {
             *w.data

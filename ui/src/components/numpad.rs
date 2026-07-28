@@ -216,14 +216,14 @@ where
                 }
                 crate::graphics::draw_segmented_display(
                     ui,
-                    &[SEGMENTED_CHAR_WIDTH; 16],
+                    16,
                     &memstr,
                     if parsed_val.is_ok() {
                         ui.visuals().text_color()
                     } else {
                         style::ERROR_COLOR
                     },
-                    1.4,
+                    "Value".to_string(),
                 );
                 ui.end_row();
 

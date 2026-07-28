@@ -22,24 +22,24 @@ pub(crate) fn demo_inline_primitive_displays(ui: &mut egui::Ui, val: f64) {
     let mut val_bool: bool = val > 0.0;
 
     ui.label("u8");
-    val_u8.inline_widget(ui);
+    val_u8.inline_widget(ui, "u8");
     ui.label("u16");
-    val_u16.inline_widget(ui);
+    val_u16.inline_widget(ui, "u16");
     ui.label("u32");
-    val_u32.inline_widget(ui);
+    val_u32.inline_widget(ui, "u32");
 
     ui.label("i16");
-    val_i16.inline_widget(ui);
+    val_i16.inline_widget(ui, "i16");
     ui.label("i32");
-    val_i32.inline_widget(ui);
+    val_i32.inline_widget(ui, "i32");
 
     ui.label("f32");
-    val_f32.inline_widget(ui);
+    val_f32.inline_widget(ui, "f32");
     ui.label("f64");
-    val_f64.inline_widget(ui);
+    val_f64.inline_widget(ui, "f64");
 
     ui.label("char");
-    val_char.inline_widget(ui);
+    val_char.inline_widget(ui, "char");
     ui.label("bool");
-    val_bool.inline_widget(ui);
+    val_bool.inline_widget(ui, "bool");
 }
