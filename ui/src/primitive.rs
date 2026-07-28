@@ -90,7 +90,7 @@ impl InlineWidget for i16 {
         draw_segmented_display(
             ui,
             6,
-            &format!("{}{: >5}", if *self < 0 { '-' } else { ' ' }, self.abs()),
+            &format!("{}", self),
             ui.visuals().text_color(),
             label,
         )
@@ -102,7 +102,7 @@ impl InlineWidget for i32 {
         draw_segmented_display(
             ui,
             11,
-            &format!("{}{: >10}", if *self < 0 { '-' } else { ' ' }, self.abs()),
+            &format!("{}", self),
             ui.visuals().text_color(),
             label,
         )
