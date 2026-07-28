@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+mod autoenum;
 mod buttons;
 mod inline_primitive;
 mod inline_primitive_menu;
@@ -12,6 +13,7 @@ pub fn demo_ui(ui: &mut egui::Ui) {
             inline_primitive_menu::demo_inline_primitive_menu(ui);
             timecode::demo_timecode(ui);
             buttons::demo_buttons(ui);
+            autoenum::demo_autoenum(ui);
         });
     });
 }
