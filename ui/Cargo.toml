@@ -9,6 +9,7 @@ backtrace = "0.3.75"
 ks-common-generic = { git = "https://github.com/lexag/ks-common", features = ["std"] } 
 eframe = { version = "0.33.3", optional = true }
 manifest-dir-macros = "0.1.19"
+material-icons = "0.3.0"
 
 [features]
 examples = ["dep:eframe"]

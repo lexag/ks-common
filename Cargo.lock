@@ -1772,6 +1772,7 @@ dependencies = [
  "egui",
  "ks-common-generic 2.3.0 (git+https://github.com/lexag/ks-common)",
  "manifest-dir-macros",
+ "material-icons",
 ]
 
 [[package]]
@@ -1865,6 +1866,12 @@ dependencies = [
  "quote",
  "syn 2.0.119",
 ]
+
+[[package]]
+name = "material-icons"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51749189f2b4bf6a522337b504a85a543b5e2af670cb08bcf48297ada61dc2d7"
 
 [[package]]
 name = "memchr"

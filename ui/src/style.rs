@@ -44,26 +44,34 @@ pub fn load_fonts(egui_ctx: &mut Context) {
             "font/IBMPlexMono-Bold.ttf"
         )))),
     );
+    fonts.font_data.insert(
+        "MaterialIcons".to_owned(),
+        std::sync::Arc::new(FontData::from_static(material_icons::FONT)),
+    );
 
     fonts.families.insert(
         FontFamily::Name("PlexMono".into()),
-        vec!["IBMPlexMono".to_owned()],
+        vec!["IBMPlexMono".to_owned(), "MaterialIcons".to_owned()],
     );
     fonts.families.insert(
         FontFamily::Name("PlexMonoBold".into()),
-        vec!["IBMPlexMonoBold".to_owned()],
+        vec!["IBMPlexMonoBold".to_owned(), "MaterialIcons".to_owned()],
     );
     fonts.families.insert(
         FontFamily::Name("Plex".into()),
-        vec!["IBMPlexSans".to_owned()],
+        vec!["IBMPlexSans".to_owned(), "MaterialIcons".to_owned()],
     );
-    fonts
-        .families
-        .insert(FontFamily::Name("LTC".into()), vec!["LTC".to_owned()]);
+    fonts.families.insert(
+        FontFamily::Name("LTC".into()),
+        vec!["LTC".to_owned(), "MaterialIcons".to_owned()],
+    );
 
     egui_ctx.set_fonts(fonts);
 }
 
+pub fn font_icon() -> FontId {
+    FontId::new(32.0, FontFamily::Name("PlexMono".into()))
+}
 pub fn font_menu() -> FontId {
     FontId::new(13.0, FontFamily::Name("Plex".into()))
 }

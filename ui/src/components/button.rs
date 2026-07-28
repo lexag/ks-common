@@ -1,8 +1,10 @@
 use crate::style::{self, CORNER_RADIUS, auto_bg_stroke, auto_fg_fill};
 use egui::{Align2, Color32, Rect, Sense, Vec2, Widget, vec2};
+use material_icons::Icon;
 
 pub struct Button<'a> {
     text: &'a str,
+    icon: Option<char>,
     override_fill: Option<Color32>,
     indicator: Option<Color32>,
 }
@@ -13,8 +15,14 @@ impl<'a> Button<'a> {
     const SIZE: Vec2 = Vec2::splat(Self::SQUARE_BUTTON_WIDTH);
 
     pub fn new(text: &'a str) -> Self {
+        let icon = if text.len() == 1 {
+            text.chars().next()
+        } else {
+            None
+        };
         Self {
             text,
+            icon,
             override_fill: None,
             indicator: None,
         }
@@ -31,12 +39,18 @@ impl<'a> Button<'a> {
         self.indicator = col.or(Some(Color32::BLACK));
         self
     }
+
+    pub fn icon(mut self, icon: Icon) -> Self {
+        self.icon = Some(icon.into());
+        self
+    }
 }
 
 impl<'a> Widget for Button<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let (resp, p) = ui.allocate_painter(Self::SIZE, Sense::click());
         let body_rect = resp.rect;
+        let indicator_center = body_rect.lerp_inside([0.5, 0.8]);
 
         // Main button body
         p.rect(
@@ -47,16 +61,28 @@ impl<'a> Widget for Button<'a> {
             egui::StrokeKind::Inside,
         );
 
+        let mut text_rect = body_rect;
+        if self.indicator.is_some() {
+            if self.icon.is_some() {
+                *text_rect.bottom_mut() = indicator_center.y;
+            } else {
+                *text_rect.bottom_mut() -= 4.0;
+            }
+        }
+
+        let text = self
+            .icon
+            .map_or(self.text.to_string(), |icon| icon.to_string());
+
         p.text(
-            body_rect.center()
-                + if self.indicator.is_some() {
-                    vec2(0.0, -4.0)
-                } else {
-                    Vec2::ZERO
-                },
+            text_rect.center(),
             Align2::CENTER_CENTER,
-            self.text,
-            style::font_button(),
+            text,
+            if self.icon.is_some() {
+                style::font_icon()
+            } else {
+                style::font_button()
+            },
             ui.visuals().widgets.inactive.fg_stroke.color,
         );
 
@@ -66,7 +92,6 @@ impl<'a> Widget for Button<'a> {
                 indicator_color = indicator_color.gamma_multiply(ui.visuals().disabled_alpha);
             }
 
-            let indicator_center = body_rect.lerp_inside([0.5, 0.8]);
             const SIZE: Vec2 = vec2(32.0, 8.0);
             let indicator_rect = Rect::from_center_size(indicator_center, SIZE);
             p.rect_filled(indicator_rect, 0, indicator_color);
