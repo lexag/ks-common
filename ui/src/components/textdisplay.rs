@@ -1,6 +1,7 @@
 use crate::graphics;
 use crate::style;
 use egui::FontId;
+use egui::NumExt;
 use egui::vec2;
 use egui::{Align, Align2, Color32, Widget};
 
@@ -17,6 +18,17 @@ impl<'a> TextDisplay<'a> {
         Self {
             text,
             max_len,
+            label: None,
+            align: None,
+            color: None,
+        }
+    }
+
+    /// Takes all available width in parent ui
+    pub fn fullwide(text: &'a str) -> Self {
+        Self {
+            text,
+            max_len: usize::MAX,
             label: None,
             align: None,
             color: None,
@@ -50,7 +62,8 @@ impl<'a> TextDisplay<'a> {
 impl<'a> Widget for TextDisplay<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let actual_text_width = self.text.chars().map(graphics::char_width).sum::<f32>();
-        let max_text_width = self.max_len as f32 * graphics::char_width('M');
+        let max_text_width =
+            (self.max_len as f32 * graphics::char_width('M')).at_most(ui.available_width());
 
         let (resp, p) =
             graphics::allocate_display_box(ui, self.label.unwrap_or_default(), max_text_width);

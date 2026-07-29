@@ -1,4 +1,5 @@
-use crate::autoenum::InlineWidgetAutoEnum;
+use crate::{autoenum::InlineWidgetAutoEnum, components::TextDisplay};
+use egui::Widget;
 use std::fmt::Display;
 
 #[derive(Clone, PartialEq)]
@@ -121,6 +122,7 @@ impl Display for LongEnum {
 
 pub fn demo_autoenum(ui: &mut egui::Ui) {
     ui.vertical(|ui| {
+        ui.set_max_width(350.0);
         let mut val = ui.memory(|r| {
             r.data
                 .get_temp::<(ShortEnum, LongEnum)>(ui.id())
@@ -131,6 +133,8 @@ pub fn demo_autoenum(ui: &mut egui::Ui) {
         val.0.autoenum_inline_widget_menu(ui, "Short RW");
         val.1.autoenum_inline_widget(ui, "Long RO");
         val.1.autoenum_inline_widget_menu(ui, "Long RW");
+
+        TextDisplay::fullwide("this is fullwide!").ui(ui);
 
         ui.memory_mut(|w| {
             *w.data
