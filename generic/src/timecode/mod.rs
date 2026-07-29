@@ -399,7 +399,7 @@ impl Timecode {
     /// frame rate is used so the result is frame-accurate.
     #[allow(clippy::cast_precision_loss)]
     pub fn to_seconds_f64(&self) -> f64 {
-        let rate = frame_rate_from_info(&self.frame_rate);
+        let rate = FrameRate::from(self.frame_rate);
         let (num, den) = rate.as_rational();
         // Use the exact rational to avoid floating-point drift at pull-down rates.
         self.frame_count_cache as f64 * den as f64 / num as f64
@@ -714,7 +714,7 @@ impl FromStr for Timecode {
                 .unwrap_or(&25) // fallback
         };
 
-        let framerate = frame_rate_from_info(&FrameRateInfo { drop_frame, fps });
+        let framerate = FrameRate::from(FrameRateInfo { drop_frame, fps });
 
         seconds += frames / fps;
         minutes += seconds / 60;
@@ -740,7 +740,7 @@ impl core::ops::Add for Timecode {
     /// The result uses the frame rate of `self`. The frame counts wrap at a
     /// 24-hour boundary.
     fn add(self, rhs: Self) -> Self::Output {
-        let rate = frame_rate_from_info(&self.frame_rate);
+        let rate = FrameRate::from(self.frame_rate);
         let fps = self.frame_rate.fps as u64;
         let frames_per_day = fps * 86_400;
 
@@ -762,7 +762,7 @@ impl core::ops::Sub for Timecode {
     /// The result uses the frame rate of `self`. Underflow wraps at a
     /// 24-hour boundary.
     fn sub(self, rhs: Self) -> Self::Output {
-        let rate = frame_rate_from_info(&self.frame_rate);
+        let rate = FrameRate::from(self.frame_rate);
         let fps = self.frame_rate.fps as u64;
         let frames_per_day = fps * 86_400;
 
@@ -788,7 +788,7 @@ impl core::ops::Add<u32> for Timecode {
     ///
     /// The result uses the frame rate of `self`.
     fn add(self, rhs: u32) -> Self::Output {
-        let rate = frame_rate_from_info(&self.frame_rate);
+        let rate = FrameRate::from(self.frame_rate);
         let fps = self.frame_rate.fps as u64;
         let frames_per_day = fps * 86_400;
 
@@ -1318,19 +1318,19 @@ mod tests {
             fps: 25,
             drop_frame: false,
         };
-        assert_eq!(frame_rate_from_info(&info), FrameRate::Fps25);
+        assert_eq!(FrameRate::from(info), FrameRate::Fps25);
 
         let info_df = FrameRateInfo {
             fps: 30,
             drop_frame: true,
         };
-        assert_eq!(frame_rate_from_info(&info_df), FrameRate::Fps2997DF);
+        assert_eq!(FrameRate::from(info_df), FrameRate::Fps2997DF);
 
         let info_120 = FrameRateInfo {
             fps: 120,
             drop_frame: false,
         };
-        assert_eq!(frame_rate_from_info(&info_120), FrameRate::Fps120);
+        assert_eq!(FrameRate::from(info_120), FrameRate::Fps120);
     }
 
     #[test]
