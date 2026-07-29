@@ -11,6 +11,7 @@ mod interface;
 pub mod traits {
     pub use crate::autoenum::InlineWidgetAutoEnum;
     pub use crate::interface::AutoInlineWidgetMenu;
+    pub use crate::interface::ConfigurationWidget;
     pub use crate::interface::InlineWidget;
     pub use crate::interface::InlineWidgetMenu;
 }
