@@ -1,5 +1,5 @@
 use crate::{
-    graphics::{self, draw_segmented_display},
+    components,
     interface::{ConfigurationWidget, InlineWidget},
     style,
 };
@@ -7,26 +7,12 @@ use core::net::Ipv4Addr;
 use core::net::SocketAddrV4;
 use egui::Widget;
 
-const CHAR: f32 = graphics::SEGMENTED_CHAR_WIDTH;
-const SEPR: f32 = graphics::SEGMENTED_SEPR_WIDTH;
-
 impl InlineWidget for SocketAddrV4 {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
         let octets = self.ip().octets();
-        draw_segmented_display(
-            ui,
-            21,
-            &format!(
-                "{:>3}.{:>3}.{:>3}.{:>3}:{:>5}",
-                octets[0],
-                octets[1],
-                octets[2],
-                octets[3],
-                self.port()
-            ),
-            style::ACCENT_COLOR,
-            label,
-        )
+        components::TextDisplay::new(&self.to_string(), 21)
+            .label(&label)
+            .ui(ui)
     }
 }
 

@@ -1,47 +1,34 @@
 use crate::{
-    graphics::{self, draw_segmented_display},
+    components,
     interface::{ConfigurationWidget, InlineWidget},
     style,
 };
 
 use egui::Widget;
 
-const CHAR: f32 = graphics::SEGMENTED_CHAR_WIDTH;
-const SEPR: f32 = graphics::SEGMENTED_SEPR_WIDTH;
-
 impl InlineWidget for f32 {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
-        draw_segmented_display(
-            ui,
-            8,
-            &format!("{}", self),
-            ui.visuals().text_color(),
-            label,
-        )
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        components::TextDisplay::new(&self.to_string(), 8)
+            .label(label)
+            .ui(ui)
     }
 }
 
 impl InlineWidget for f64 {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
-        draw_segmented_display(
-            ui,
-            8,
-            &format!("{}", self),
-            ui.visuals().text_color(),
-            label,
-        )
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        components::TextDisplay::new(&self.to_string(), 8)
+            .label(label)
+            .ui(ui)
     }
 }
 
 impl InlineWidget for bool {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
-        draw_segmented_display(
-            ui,
-            3,
-            if *self { " X " } else { "   " },
-            style::ACCENT_COLOR,
-            label,
-        )
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        components::TextDisplay::new(if *self { "X" } else { "" }, 3)
+            .align(egui::Align::Center)
+            .color(style::ACCENT_COLOR)
+            .label(label)
+            .ui(ui)
     }
 
     fn on_click(&mut self) {
@@ -50,74 +37,53 @@ impl InlineWidget for bool {
 }
 
 impl InlineWidget for u8 {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
-        draw_segmented_display(
-            ui,
-            3,
-            &format!("{: >3}", self),
-            ui.visuals().text_color(),
-            label,
-        )
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        components::TextDisplay::new(&self.to_string(), 3)
+            .align(egui::Align::Center)
+            .label(label)
+            .ui(ui)
     }
 }
 
 impl InlineWidget for u16 {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
-        draw_segmented_display(
-            ui,
-            5,
-            &format!("{: >5}", self),
-            ui.visuals().text_color(),
-            label,
-        )
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        components::TextDisplay::new(&self.to_string(), 5)
+            .align(egui::Align::Center)
+            .label(label)
+            .ui(ui)
     }
 }
 
 impl InlineWidget for u32 {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
-        draw_segmented_display(
-            ui,
-            10,
-            &format!("{: >10}", self),
-            ui.visuals().text_color(),
-            label,
-        )
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        components::TextDisplay::new(&self.to_string(), 10)
+            .label(label)
+            .ui(ui)
     }
 }
 
 impl InlineWidget for i16 {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
-        draw_segmented_display(
-            ui,
-            6,
-            &format!("{}", self),
-            ui.visuals().text_color(),
-            label,
-        )
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        components::TextDisplay::new(&self.to_string(), 6)
+            .label(label)
+            .ui(ui)
     }
 }
 
 impl InlineWidget for i32 {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
-        draw_segmented_display(
-            ui,
-            11,
-            &format!("{}", self),
-            ui.visuals().text_color(),
-            label,
-        )
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        components::TextDisplay::new(&self.to_string(), 11)
+            .label(label)
+            .ui(ui)
     }
 }
 
 impl InlineWidget for char {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
-        draw_segmented_display(
-            ui,
-            3,
-            &format!(" {} ", self),
-            ui.visuals().text_color(),
-            label,
-        )
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        components::TextDisplay::new(&self.to_string(), 3)
+            .align(egui::Align::Center)
+            .label(label)
+            .ui(ui)
     }
 }
 

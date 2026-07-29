@@ -6,11 +6,11 @@ use egui::Response;
 /// Can be text-based or visual.
 pub trait InlineWidget {
     /// Render function for this trait
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response;
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response;
 
     /// Main function for this trait. Call this from outside, and it handles the rest.
-    fn inline_widget(&mut self, ui: &mut egui::Ui, label: impl ToString) -> egui::Response {
-        let widget = self.draw(ui, label.to_string());
+    fn inline_widget(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        let widget = self.draw(ui, label);
         if widget.clicked() {
             self.on_click()
         }
@@ -61,14 +61,14 @@ pub trait ConfigurationWidget {
 }
 
 pub trait AutoInlineWidgetMenu {
-    fn auto_inline_widget_menu(&mut self, ui: &mut egui::Ui, label: impl ToString) -> Response;
+    fn auto_inline_widget_menu(&mut self, ui: &mut egui::Ui, label: &str) -> Response;
 }
 
 impl<T> AutoInlineWidgetMenu for T
 where
     T: InlineWidgetMenu + ConfigurationWidget + Clone,
 {
-    fn auto_inline_widget_menu(&mut self, ui: &mut egui::Ui, label: impl ToString) -> Response {
+    fn auto_inline_widget_menu(&mut self, ui: &mut egui::Ui, label: &str) -> Response {
         self.clone().inline_widget_menu(ui, label, |ui| {
             self.draw_configuration(ui);
         })
@@ -80,7 +80,7 @@ pub trait InlineWidgetMenu {
     fn inline_widget_menu(
         &mut self,
         ui: &mut egui::Ui,
-        label: impl ToString,
+        label: &str,
         add_contents: impl FnOnce(&mut egui::Ui),
     ) -> Response;
 }
@@ -92,7 +92,7 @@ where
     fn inline_widget_menu(
         &mut self,
         ui: &mut egui::Ui,
-        label: impl ToString,
+        label: &str,
         add_contents: impl FnOnce(&mut egui::Ui),
     ) -> Response {
         let response = self.inline_widget(ui, label);

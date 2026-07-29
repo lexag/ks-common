@@ -19,7 +19,7 @@ impl Display for ShortEnum {
         match self {
             Self::A => write!(f, "A"),
             Self::B => write!(f, "B"),
-            Self::C => write!(f, "C"),
+            Self::C => write!(f, "CCCC"),
         }
     }
 }

@@ -1,48 +1,45 @@
 use crate::{
-    graphics::{self, draw_segmented_display},
+    components,
     interface::{ConfigurationWidget, InlineWidget},
-    style,
 };
-use egui::{Key, Widget};
+use egui::{Align, Key, Widget};
 use ks_common_generic::smpte::{Timecode, TimecodeOffset};
 
-const CHAR: f32 = graphics::SEGMENTED_CHAR_WIDTH;
-const SEPR: f32 = graphics::SEGMENTED_SEPR_WIDTH;
-
 impl InlineWidget for Timecode {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
-        draw_segmented_display(
-            ui,
-            14,
-            &format!("[{}] {}", self.frame_rate.fps, self),
-            style::ACCENT_COLOR,
-            label,
-        )
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        components::TextDisplay::new(&format!("[{}] {}", self.frame_rate.fps, self), 14)
+            .label(label)
+            .align(Align::Max)
+            .ui(ui)
     }
 }
 
 impl InlineWidget for Option<Timecode> {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
         match self {
             Some(tc) => tc.draw(ui, label),
-            None => draw_segmented_display(ui, 14, "   NO    TC   ", style::WARNING_COLOR, label),
+            None => components::TextDisplay::new("NO    TC", 14)
+                .align(Align::Center)
+                .label(label)
+                .color(ui.visuals().warn_fg_color)
+                .ui(ui),
         }
     }
 }
 
 impl InlineWidget for TimecodeOffset {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
-        draw_segmented_display(
-            ui,
-            14,
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        components::TextDisplay::new(
             &format!(
                 "{} {}",
                 if self.is_negative { '-' } else { '+' },
                 self.abs_time
             ),
-            ui.visuals().text_color(),
-            label,
+            14,
         )
+        .label(label)
+        .align(Align::Max)
+        .ui(ui)
     }
 }
 

@@ -1,10 +1,10 @@
 use crate::{
-    components::selector_list_value,
-    graphics::{self, draw_segmented_display},
+    components::{self, selector_list_value},
     interface::{ConfigurationWidget, InlineWidget, InlineWidgetMenu},
 };
 use core::fmt::Display;
 use egui::Color32;
+use egui::Widget;
 
 pub trait InlineWidgetAutoEnum {
     fn options() -> Vec<Self>
@@ -19,14 +19,14 @@ pub trait InlineWidgetAutoEnum {
         None
     }
 
-    fn autoenum_inline_widget(&mut self, ui: &mut egui::Ui, label: impl ToString)
+    fn autoenum_inline_widget(&mut self, ui: &mut egui::Ui, label: &str)
     where
         Self: InlineWidget,
     {
         self.inline_widget(ui, label);
     }
 
-    fn autoenum_inline_widget_menu(&mut self, ui: &mut egui::Ui, label: impl ToString)
+    fn autoenum_inline_widget_menu(&mut self, ui: &mut egui::Ui, label: &str)
     where
         Self: InlineWidgetMenu + Clone + ConfigurationWidget,
     {
@@ -40,7 +40,7 @@ impl<T> InlineWidget for T
 where
     T: InlineWidgetAutoEnum + Display,
 {
-    fn draw(&mut self, ui: &mut egui::Ui, label: String) -> egui::Response {
+    fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
         let options = T::options();
         let text = self.text().unwrap_or(self.to_string());
         let lengths = options
@@ -49,21 +49,14 @@ where
         let max_width = if options.is_empty() {
             0
         } else {
-            let len = lengths.clone().max().expect("Not empty");
-            if lengths.min().expect("Not empty") != len {
-                len + 2
-            } else {
-                len
-            }
+            lengths.clone().max().expect("Not empty")
         };
 
-        draw_segmented_display(
-            ui,
-            max_width,
-            &text,
-            self.color().unwrap_or(ui.visuals().text_color()),
-            label,
-        )
+        components::TextDisplay::new(&text, max_width)
+            .color_o(self.color())
+            .align(egui::Align::Center)
+            .label(label)
+            .ui(ui)
     }
 }
 

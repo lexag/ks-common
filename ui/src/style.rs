@@ -109,7 +109,7 @@ pub fn style() -> Style {
     }
 }
 
-fn interaction() -> Interaction {
+pub fn interaction() -> Interaction {
     Interaction {
         selectable_labels: false,
         multi_widget_text_select: false,
@@ -172,7 +172,7 @@ pub(crate) fn spacing() -> Spacing {
     }
 }
 
-fn visuals() -> Visuals {
+pub fn visuals() -> Visuals {
     Visuals {
         window_fill: Color32::from_rgb(28, 29, 32).lerp_to_gamma(Color32::BLACK, 0.5),
         panel_fill: Color32::from_rgb(36, 38, 42).lerp_to_gamma(Color32::BLACK, 0.5),
@@ -234,7 +234,7 @@ fn visuals() -> Visuals {
     }
 }
 
-fn widgets() -> egui::style::Widgets {
+pub fn widgets() -> egui::style::Widgets {
     Widgets {
         noninteractive: egui::style::WidgetVisuals {
             weak_bg_fill: Color32::from_rgb(28, 30, 34),

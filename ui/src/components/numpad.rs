@@ -1,4 +1,4 @@
-use crate::style;
+use crate::{components, style};
 use crate::{components::Button, graphics::SEGMENTED_CHAR_WIDTH};
 use core::str::FromStr;
 use egui::{Key, Vec2, Widget};
@@ -214,17 +214,10 @@ where
                 if self.side_keys.is_some() {
                     ui.allocate_space(Vec2::ZERO);
                 }
-                crate::graphics::draw_segmented_display(
-                    ui,
-                    16,
-                    &memstr,
-                    if parsed_val.is_ok() {
-                        ui.visuals().text_color()
-                    } else {
-                        style::ERROR_COLOR
-                    },
-                    "Value".to_string(),
-                );
+                components::TextDisplay::new(&memstr, 16)
+                    .color_o(parsed_val.is_err().then_some(style::ERROR_COLOR))
+                    .label("Value")
+                    .ui(ui);
                 ui.end_row();
 
                 if let Some(keys) = self.side_keys {
