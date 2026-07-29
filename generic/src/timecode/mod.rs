@@ -162,25 +162,27 @@ pub struct FrameRateInfo {
     pub fps: u8,
 }
 
-/// Reconstruct a [`FrameRate`] enum from a [`FrameRateInfo`] embedded in a [`Timecode`].
-///
-/// This is a best-effort reconstruction: it cannot distinguish e.g. `Fps23976` from `Fps24`
-/// (both have nominal fps=24) without the drop-frame flag, so it uses the drop-frame flag
-/// and nominal fps to select the most common matching variant.
-pub fn frame_rate_from_info(info: &FrameRateInfo) -> FrameRate {
-    match (info.fps, info.drop_frame) {
-        (24, true) => FrameRate::Fps23976DF,
-        (24, false) => FrameRate::Fps23976, // Conservative: assume pull-down variant
-        (25, _) => FrameRate::Fps25,
-        (30, true) => FrameRate::Fps2997DF,
-        (30, false) => FrameRate::Fps2997NDF,
-        (48, true) => FrameRate::Fps47952DF,
-        (48, false) => FrameRate::Fps47952,
-        (50, _) => FrameRate::Fps50,
-        (60, true) => FrameRate::Fps5994DF,
-        (60, false) => FrameRate::Fps5994,
-        (120, _) => FrameRate::Fps120,
-        _ => FrameRate::Fps25, // Fallback
+impl From<FrameRateInfo> for FrameRate {
+    /// Reconstruct a [`FrameRate`] enum from a [`FrameRateInfo`] embedded in a [`Timecode`].
+    ///
+    /// This is a best-effort reconstruction: it cannot distinguish e.g. `Fps23976` from `Fps24`
+    /// (both have nominal fps=24) without the drop-frame flag, so it uses the drop-frame flag
+    /// and nominal fps to select the most common matching variant.
+    fn from(info: FrameRateInfo) -> FrameRate {
+        match (info.fps, info.drop_frame) {
+            (24, true) => FrameRate::Fps23976DF,
+            (24, false) => FrameRate::Fps23976, // Conservative: assume pull-down variant
+            (25, _) => FrameRate::Fps25,
+            (30, true) => FrameRate::Fps2997DF,
+            (30, false) => FrameRate::Fps2997NDF,
+            (48, true) => FrameRate::Fps47952DF,
+            (48, false) => FrameRate::Fps47952,
+            (50, _) => FrameRate::Fps50,
+            (60, true) => FrameRate::Fps5994DF,
+            (60, false) => FrameRate::Fps5994,
+            (120, _) => FrameRate::Fps120,
+            _ => FrameRate::Fps25, // Fallback
+        }
     }
 }
 
