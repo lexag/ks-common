@@ -8,6 +8,8 @@ pub mod style;
 mod autoenum;
 mod interface;
 
+pub use material_icons;
+
 pub mod traits {
     pub use crate::autoenum::InlineWidgetAutoEnum;
     pub use crate::interface::AutoInlineWidgetMenu;
