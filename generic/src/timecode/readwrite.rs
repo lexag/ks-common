@@ -104,6 +104,13 @@ impl TimecodeReader for LtcReader {
     fn is_synchronized(&self) -> bool {
         self.decoder.is_synchronized()
     }
+
+    fn read_timecode_confidence(&mut self) -> Result<(Timecode, f32), TimecodeError> {
+        self.read_timecode()?.map_or_else(
+            || Ok((Timecode::default(), 0.0)),
+            |t| Ok((t, self.decoder.sync_confidence())),
+        )
+    }
 }
 
 /// LTC writer configuration
