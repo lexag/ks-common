@@ -31,7 +31,7 @@ pub struct LtcDecoder {
     /// Sample rate
     #[allow(dead_code)]
     sample_rate: u32,
-    /// Frame rate
+    /// Expected frame rate
     frame_rate: FrameRate,
     /// Minimum signal amplitude
     min_amplitude: f32,

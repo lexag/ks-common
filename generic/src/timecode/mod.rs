@@ -857,7 +857,7 @@ pub trait TimecodeReader {
             .map_or_else(|| Ok((Timecode::default(), 0.0)), |t| Ok((t, 1.0)))
     }
 
-    /// Get the current frame rate
+    /// Get the expected frame rate
     fn frame_rate(&self) -> FrameRate;
 
     /// Check if the reader is synchronized
