@@ -82,7 +82,7 @@ impl LtcReader {
     }
 }
 
-impl TimecodeReader for LtcReader {
+impl TimecodeReader<TimecodeError> for LtcReader {
     /// Return the most recently decoded timecode.
     ///
     /// Audio samples must be submitted via [`LtcReader::process_samples`]
@@ -158,7 +158,7 @@ impl LtcWriter {
     }
 }
 
-impl TimecodeWriter for LtcWriter {
+impl TimecodeWriter<TimecodeError> for LtcWriter {
     fn write_timecode(&mut self, timecode: &Timecode) -> Result<(), TimecodeError> {
         let _samples = self.encode_frame(timecode)?;
         // In a real implementation, samples would be written to an audio output

@@ -843,16 +843,16 @@ impl fmt::Display for Timecode {
 
 /// Timecode reader trait
 #[cfg(feature = "std")]
-pub trait TimecodeReader {
+pub trait TimecodeReader<E> {
     /// Read the next timecode from the source
-    fn read_timecode(&mut self) -> Result<Option<Timecode>, TimecodeError>;
+    fn read_timecode(&mut self) -> Result<Option<Timecode>, E>;
 
     /// Read the next timecode from the source, and also return confidence in that timecode (0.0..1.0)
     /// as (Timecode, confidence)
     /// By default this calls [`TimecodeReader::read_timecode`] with confidence 0.0 on None and
     /// confidence 1.0 on Some(tc).
     /// Overwrite this implementation for readers that reasonably can have varying confidence
-    fn read_timecode_confidence(&mut self) -> Result<(Timecode, f32), TimecodeError> {
+    fn read_timecode_confidence(&mut self) -> Result<(Timecode, f32), E> {
         self.read_timecode()?
             .map_or_else(|| Ok((Timecode::default(), 0.0)), |t| Ok((t, 1.0)))
     }
@@ -866,15 +866,15 @@ pub trait TimecodeReader {
 
 /// Timecode writer trait
 #[cfg(feature = "std")]
-pub trait TimecodeWriter {
+pub trait TimecodeWriter<E> {
     /// Write a timecode to the output
-    fn write_timecode(&mut self, timecode: &Timecode) -> Result<(), TimecodeError>;
+    fn write_timecode(&mut self, timecode: &Timecode) -> Result<(), E>;
 
     /// Get the current frame rate
     fn frame_rate(&self) -> FrameRate;
 
     /// Flush any buffered data
-    fn flush(&mut self) -> Result<(), TimecodeError>;
+    fn flush(&mut self) -> Result<(), E>;
 }
 
 // ---------------------------------------------------------------------------
