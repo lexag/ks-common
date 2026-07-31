@@ -1,9 +1,10 @@
 use crate::{
     components,
     interface::{ConfigurationWidget, InlineWidget},
+    traits::InlineWidgetAutoEnum,
 };
 use egui::{Align, Key, Widget};
-use ks_common_generic::smpte::{Timecode, TimecodeOffset};
+use ks_common_generic::smpte::{FrameRate, Timecode, TimecodeOffset};
 
 impl InlineWidget for Timecode {
     fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
@@ -63,5 +64,29 @@ impl ConfigurationWidget for TimecodeOffset {
             .with_sign()
             .ui(ui);
         //self.abs_time.frame_rate = fps;
+    }
+}
+
+impl InlineWidgetAutoEnum for FrameRate {
+    fn options() -> Vec<Self>
+    where
+        Self: Sized + core::fmt::Display,
+    {
+        vec![
+            Self::Fps23976,
+            Self::Fps23976DF,
+            Self::Fps24,
+            Self::Fps25,
+            Self::Fps2997DF,
+            Self::Fps2997NDF,
+            Self::Fps30,
+            Self::Fps47952,
+            Self::Fps47952DF,
+            Self::Fps50,
+            Self::Fps5994,
+            Self::Fps5994DF,
+            Self::Fps60,
+            Self::Fps120,
+        ]
     }
 }
