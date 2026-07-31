@@ -1,4 +1,4 @@
-use egui::{Align2, Rect, Vec2, pos2};
+use egui::{Align2, CornerRadius, Rect, Stroke, Vec2, pos2};
 
 pub struct Popup<'a> {
     id: egui::Id,
@@ -37,6 +37,24 @@ impl<'a> Popup<'a> {
         let mut window = self.window.take()?.open(&mut open);
 
         if let Some(rect) = self.parent_rect {
+            if self.is_open(ui) {
+                ui.ctx().request_repaint();
+                let p = ui.painter();
+
+                let anim_time = (ui.input(|i| i.time as f32) * 0.5).fract();
+                let extend = 5.0 * anim_time;
+                p.rect_stroke(
+                    rect.expand(extend),
+                    ui.visuals().widgets.noninteractive.corner_radius
+                        + CornerRadius::same(extend as u8),
+                    Stroke::new(
+                        1.0,
+                        ui.visuals().warn_fg_color.gamma_multiply(1.0 - anim_time),
+                    ),
+                    egui::StrokeKind::Inside,
+                );
+            }
+
             let screen = ui.ctx().viewport_rect();
             let space_ul = rect.min - screen.min;
             let space_br = screen.max - rect.max;
