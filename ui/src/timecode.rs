@@ -8,7 +8,7 @@ use ks_common_generic::smpte::{FrameRate, Timecode, TimecodeOffset};
 
 impl InlineWidget for Timecode {
     fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
-        components::TextDisplay::new(&format!("[{}] {}", self.frame_rate.fps, self), 14)
+        components::TextDisplay::new(&format!("{}", self), 11)
             .label(label)
             .align(Align::Max)
             .ui(ui)
