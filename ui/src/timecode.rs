@@ -4,7 +4,7 @@ use crate::{
     traits::InlineWidgetAutoEnum,
 };
 use egui::{Align, Key, Widget};
-use ks_common_generic::smpte::{FrameRate, Timecode, TimecodeOffset};
+use ks_common_generic::smpte::{FrameRate, FrameRateInfo, Timecode, TimecodeOffset};
 
 impl InlineWidget for Timecode {
     fn draw(&mut self, ui: &mut egui::Ui, label: &str) -> egui::Response {
@@ -46,24 +46,38 @@ impl InlineWidget for TimecodeOffset {
 
 impl ConfigurationWidget for Timecode {
     fn grid_contents(&mut self, ui: &mut egui::Ui) {
-        let fps = self.frame_rate;
-        crate::components::Numpad::new(self)
-            .with_side_keys([Key::H, Key::M, Key::S, Key::F])
-            .with_decimal(Key::Colon)
-            .ui(ui);
-        //self.frame_rate = fps;
+        ui.vertical(|ui| {
+            let fps = self.frame_rate;
+            crate::components::Numpad::new(self)
+                .with_side_keys([Key::H, Key::M, Key::S, Key::F])
+                .with_decimal(Key::Colon)
+                .ui(ui);
+            let mut fr: FrameRate = fps.into();
+            fr.autoenum_inline_widget_menu(ui, "Frame rate");
+            self.frame_rate = FrameRateInfo {
+                drop_frame: fr.is_drop_frame(),
+                fps: fr.frames_per_second() as u8,
+            };
+        });
     }
 }
 
 impl ConfigurationWidget for TimecodeOffset {
     fn grid_contents(&mut self, ui: &mut egui::Ui) {
-        let fps = self.abs_time.frame_rate;
-        crate::components::Numpad::new(self)
-            .with_side_keys([Key::H, Key::M, Key::S, Key::F])
-            .with_decimal(Key::Colon)
-            .with_sign()
-            .ui(ui);
-        //self.abs_time.frame_rate = fps;
+        ui.vertical(|ui| {
+            let fps = self.abs_time.frame_rate;
+            crate::components::Numpad::new(self)
+                .with_side_keys([Key::H, Key::M, Key::S, Key::F])
+                .with_decimal(Key::Colon)
+                .with_sign()
+                .ui(ui);
+            let mut fr: FrameRate = fps.into();
+            fr.autoenum_inline_widget_menu(ui, "Frame rate");
+            self.abs_time.frame_rate = FrameRateInfo {
+                drop_frame: fr.is_drop_frame(),
+                fps: fr.frames_per_second() as u8,
+            };
+        });
     }
 }
 
