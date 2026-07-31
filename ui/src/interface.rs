@@ -109,3 +109,28 @@ where
         response
     }
 }
+
+pub trait SubstitutedAutoInlineWidgetMenu<S>: ConfigurationWidget
+where
+    S: InlineWidget,
+{
+    fn substitute(&self) -> S {
+        unimplemented!(
+            "Implement `SubstitutedAutoInlineWidgetMenu<{}>::substitute for {}` to use SubstitutedAutoInlineWidgetMenu",
+            { core::any::type_name::<S>() },
+            { core::any::type_name_of_val(self) },
+        );
+    }
+
+    fn auto_inline_widget_menu(&mut self, ui: &mut egui::Ui, label: &str) -> Response {
+        let response = self.substitute().inline_widget(ui, label);
+        let mut window = Popup::new(ui.id().with(label)).pos_parent(response.rect);
+        if response.clicked() {
+            window.toggle_open(ui);
+        }
+        window.show(ui, |ui| {
+            self.draw_configuration(ui);
+        });
+        response
+    }
+}

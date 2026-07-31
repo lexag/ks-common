@@ -1,7 +1,9 @@
 use egui::Response;
 
 /// How many times longer the long side is allowed to be before wrapping should occur
-const ASPECT_LIMIT: f32 = 2.5;
+/// FIXME: this does not seem to be calculated with correctly.
+/// 3.5 gives a nice square which is not right.
+const ASPECT_LIMIT: f32 = 3.5;
 
 pub struct SquarishGrid {
     expected_count: usize,

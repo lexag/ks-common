@@ -5,6 +5,7 @@ mod buttons;
 mod inline_primitive;
 mod inline_primitive_menu;
 mod numpad;
+mod substituted_automenu;
 mod timecode;
 
 pub fn demo_ui(ui: &mut egui::Ui) {
@@ -14,6 +15,7 @@ pub fn demo_ui(ui: &mut egui::Ui) {
             timecode::demo_timecode(ui);
             buttons::demo_buttons(ui);
             autoenum::demo_autoenum(ui);
+            substituted_automenu::demo_substitute(ui);
         });
     });
 }
