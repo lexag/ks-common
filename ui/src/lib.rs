@@ -16,6 +16,7 @@ pub mod traits {
     pub use crate::interface::ConfigurationWidget;
     pub use crate::interface::InlineWidget;
     pub use crate::interface::InlineWidgetMenu;
+    pub use crate::interface::SubstitutedAutoInlineWidgetMenu;
 }
 
 mod ip;
