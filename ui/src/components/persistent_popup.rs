@@ -42,7 +42,7 @@ impl<'a> Popup<'a> {
                 let p = ui.painter();
 
                 let anim_time = (ui.input(|i| i.time as f32) * 0.5).fract();
-                let extend = 5.0 * anim_time;
+                let extend = -5.0 * anim_time;
                 p.rect_stroke(
                     rect.expand(extend),
                     ui.visuals().widgets.noninteractive.corner_radius
