@@ -122,17 +122,17 @@ pub(crate) fn spacing() -> Spacing {
         item_spacing: vec2(8.0, 6.0),
 
         window_margin: egui::Margin {
-            left: 12,
-            right: 12,
-            top: 12,
-            bottom: 12,
+            left: 8,
+            right: 8,
+            top: 6,
+            bottom: 6,
         },
 
         menu_margin: egui::Margin {
             left: 8,
             right: 8,
-            top: 8,
-            bottom: 8,
+            top: 6,
+            bottom: 6,
         },
 
         button_padding: vec2(10.0, 6.0),

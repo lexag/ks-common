@@ -1,5 +1,6 @@
 //! Implementable display traits for rendering types into egui
 
+use crate::components::Popup;
 use egui::Response;
 
 /// Small (status-bar sized) visual representation of a type.
@@ -96,10 +97,15 @@ where
         add_contents: impl FnOnce(&mut egui::Ui),
     ) -> Response {
         let response = self.inline_widget(ui, label);
-        let _ = egui::Popup::menu(&response)
-            .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
-            .info(egui::UiStackInfo::new(egui::UiKind::Menu))
-            .show(add_contents);
+        let mut window = Popup::new(ui.id().with(label)).pos_parent(response.rect);
+        if response.clicked() {
+            window.toggle_open(ui);
+        }
+        window.show(ui, add_contents);
+        //let _ = egui::Popup::menu(&response)
+        //    .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
+        //    .info(egui::UiStackInfo::new(egui::UiKind::Menu))
+        //    .show(add_contents);
         response
     }
 }
