@@ -957,32 +957,33 @@ impl TimecodeOffset {
         seconds: u8,
         frames: u8,
         frame_rate: FrameRate,
-    ) -> Result<Self, TimecodeError> {
-        Ok(Self {
-            abs_time: Timecode::new(hours, minutes, seconds, frames, frame_rate)?,
+    ) -> Self {
+        Self {
+            abs_time: Timecode::new(hours, minutes, seconds, frames, frame_rate)
+                .unwrap_or_default(),
             is_negative: negative,
-        })
+        }
     }
 }
 
 impl core::ops::Add for TimecodeOffset {
-    type Output = Result<Self, TimecodeError>;
+    type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
         if self.is_negative == rhs.is_negative {
-            Ok(Self {
+            Self {
                 abs_time: self.abs_time + rhs.abs_time,
                 is_negative: self.is_negative,
-            })
+            }
         } else {
-            Ok(Self {
+            Self {
                 abs_time: self.abs_time.max(rhs.abs_time) - self.abs_time.min(rhs.abs_time),
                 is_negative: if self.abs_time > rhs.abs_time {
                     self.is_negative
                 } else {
                     rhs.is_negative
                 },
-            })
+            }
         }
     }
 }
@@ -999,7 +1000,7 @@ impl core::ops::Neg for TimecodeOffset {
 }
 
 impl core::ops::Sub for TimecodeOffset {
-    type Output = Result<Self, TimecodeError>;
+    type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
         self + (-rhs)
@@ -1375,23 +1376,20 @@ mod tests {
     fn test_timecode_offset_add() {
         // Add one frame
         assert_eq!(
-            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
-                + TimecodeOffset::from_raw_fields(false, 0, 0, 0, 1, FrameRate::Fps25)
-                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25)
+                + TimecodeOffset::from_raw_fields(false, 0, 0, 0, 1, FrameRate::Fps25),
             TimecodeOffset::from_raw_fields(false, 0, 0, 4, 1, FrameRate::Fps25)
         );
         // Add negative one frame
         assert_eq!(
-            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
-                + TimecodeOffset::from_raw_fields(true, 0, 0, 0, 1, FrameRate::Fps25)
-                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25)
+                + TimecodeOffset::from_raw_fields(true, 0, 0, 0, 1, FrameRate::Fps25),
             TimecodeOffset::from_raw_fields(false, 0, 0, 3, 24, FrameRate::Fps25)
         );
         // Add negative multiple frames
         assert_eq!(
-            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
-                + TimecodeOffset::from_raw_fields(true, 0, 0, 0, 15, FrameRate::Fps25)
-                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25)
+                + TimecodeOffset::from_raw_fields(true, 0, 0, 0, 15, FrameRate::Fps25),
             TimecodeOffset::from_raw_fields(false, 0, 0, 3, 10, FrameRate::Fps25)
         );
     }
@@ -1400,23 +1398,20 @@ mod tests {
     fn test_timecode_offset_sub() {
         // Sub one frame
         assert_eq!(
-            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
-                - TimecodeOffset::from_raw_fields(false, 0, 0, 0, 1, FrameRate::Fps25)
-                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25)
+                - TimecodeOffset::from_raw_fields(false, 0, 0, 0, 1, FrameRate::Fps25),
             TimecodeOffset::from_raw_fields(false, 0, 0, 3, 24, FrameRate::Fps25)
         );
         // sub negative one frame
         assert_eq!(
-            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
-                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 1, FrameRate::Fps25)
-                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25)
+                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 1, FrameRate::Fps25),
             TimecodeOffset::from_raw_fields(false, 0, 0, 4, 1, FrameRate::Fps25)
         );
         // Sub negative multiple frames
         assert_eq!(
-            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25).expect("valid")
-                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 15, FrameRate::Fps25)
-                    .expect("valid"),
+            TimecodeOffset::from_raw_fields(false, 0, 0, 4, 0, FrameRate::Fps25)
+                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 15, FrameRate::Fps25),
             TimecodeOffset::from_raw_fields(false, 0, 0, 4, 15, FrameRate::Fps25)
         );
     }
@@ -1426,29 +1421,25 @@ mod tests {
         // Sub one frame
         assert_eq!(
             Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
-                - TimecodeOffset::from_raw_fields(false, 0, 0, 0, 1, FrameRate::Fps25)
-                    .expect("valid"),
+                - TimecodeOffset::from_raw_fields(false, 0, 0, 0, 1, FrameRate::Fps25),
             Timecode::new(0, 0, 3, 24, FrameRate::Fps25).unwrap()
         );
         // sub negative one frame
         assert_eq!(
             Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
-                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 1, FrameRate::Fps25)
-                    .expect("valid"),
+                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 1, FrameRate::Fps25),
             Timecode::new(0, 0, 4, 1, FrameRate::Fps25).unwrap()
         );
         // Sub negative multiple frames
         assert_eq!(
             Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
-                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 15, FrameRate::Fps25)
-                    .expect("valid"),
+                - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 15, FrameRate::Fps25),
             Timecode::new(0, 0, 4, 15, FrameRate::Fps25).unwrap()
         );
         // Sub wrapping
         assert_eq!(
             Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
-                - TimecodeOffset::from_raw_fields(false, 0, 3, 0, 0, FrameRate::Fps25)
-                    .expect("valid"),
+                - TimecodeOffset::from_raw_fields(false, 0, 3, 0, 0, FrameRate::Fps25),
             Timecode::new(23, 57, 4, 0, FrameRate::Fps25).unwrap()
         );
     }
