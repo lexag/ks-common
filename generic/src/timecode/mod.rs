@@ -128,7 +128,7 @@ impl FrameRate {
     }
 
     /// Get the number of frames per second (rounded)
-    pub fn frames_per_second(&self) -> u32 {
+    pub fn frames_per_second(&self) -> u8 {
         match self {
             Self::Fps23976 | Self::Fps23976DF => 24,
             Self::Fps24 => 24,
@@ -149,6 +149,13 @@ impl FrameRate {
             self,
             Self::Fps2997DF | Self::Fps23976DF | Self::Fps5994DF | Self::Fps47952DF
         )
+    }
+
+    /// Get the total number of frames in a day (24 hours)
+    pub fn frames_per_day(&self) -> u64 {
+        let (num, den) = self.as_rational();
+        let frames_per_day = (num as u64 * 86_400) / (den as u64);
+        frames_per_day
     }
 }
 
@@ -182,6 +189,15 @@ impl From<FrameRateInfo> for FrameRate {
             (60, false) => FrameRate::Fps5994,
             (120, _) => FrameRate::Fps120,
             _ => FrameRate::Fps25, // Fallback
+        }
+    }
+}
+
+impl From<FrameRate> for FrameRateInfo {
+    fn from(value: FrameRate) -> Self {
+        Self {
+            drop_frame: value.is_drop_frame(),
+            fps: value.frames_per_second(),
         }
     }
 }
@@ -406,7 +422,7 @@ impl Timecode {
     }
 
     /// Create from total frames since midnight
-    pub fn from_frames(frames: u64, frame_rate: FrameRate) -> Result<Self, TimecodeError> {
+    pub fn from_frames(frames: u64, frame_rate: FrameRate) -> Self {
         let fps = frame_rate.frames_per_second() as u64;
         let mut remaining = frames;
 
@@ -434,6 +450,7 @@ impl Timecode {
         let frame = (remaining % fps) as u8;
 
         Self::new(hours, minutes, seconds, frame, frame_rate)
+            .expect("from_frames handles validation")
     }
 
     /// Increment by one frame
@@ -466,6 +483,12 @@ impl Timecode {
         }
 
         // Recompute cache after mutation
+        self.recache_frame_count();
+
+        Ok(())
+    }
+
+    fn recache_frame_count(&mut self) {
         self.frame_count_cache = Self::compute_frames_from_fields(
             self.hours,
             self.minutes,
@@ -474,8 +497,6 @@ impl Timecode {
             self.frame_rate.fps as u64,
             self.frame_rate.drop_frame,
         );
-
-        Ok(())
     }
 
     /// Decrement by one frame
@@ -574,6 +595,22 @@ impl Timecode {
     /// Encode binary data directly
     pub fn encode_user_bits_binary(data: u32) -> u32 {
         data
+    }
+
+    /// Convert to another [`FrameRate`]. HH:MM:SS stays the same, FF is recalculated based on
+    /// how far through a second the original value is.
+    pub fn convert_framerate(self, rate: FrameRate) -> Self {
+        let mut new = Self {
+            frames: u8::try_from(
+                u32::from(self.frames) * u32::from(rate.frames_per_second())
+                    / u32::from(self.frame_rate.fps),
+            )
+            .unwrap_or_default(),
+            frame_rate: rate.into(),
+            ..self
+        };
+        new.recache_frame_count();
+        new
     }
 }
 
@@ -733,45 +770,38 @@ impl FromStr for Timecode {
 // ---------------------------------------------------------------------------
 
 impl core::ops::Add for Timecode {
-    type Output = Result<Self, TimecodeError>;
+    type Output = Self;
 
-    /// Add two timecodes by summing their total frame counts.
+    /// Add two timecodes by summing their total frame counts, adjusted for framerate differences.
     ///
     /// The result uses the frame rate of `self`. The frame counts wrap at a
     /// 24-hour boundary.
     fn add(self, rhs: Self) -> Self::Output {
         let rate = FrameRate::from(self.frame_rate);
-        let fps = self.frame_rate.fps as u64;
-        let frames_per_day = fps * 86_400;
 
-        let sum = if frames_per_day > 0 {
-            (self.frame_count_cache + rhs.frame_count_cache) % frames_per_day
-        } else {
-            self.frame_count_cache + rhs.frame_count_cache
-        };
-
+        let sum = (self.frame_count_cache + rhs.convert_framerate(rate).frame_count_cache)
+            % rate.frames_per_day();
         Self::from_frames(sum, rate)
     }
 }
 
 impl core::ops::Sub for Timecode {
-    type Output = Result<Self, TimecodeError>;
+    type Output = Self;
 
-    /// Subtract `rhs` from `self` by frame count.
+    /// Subtract `rhs` from `self` by frame count, adjusted for framerate differences.
     ///
     /// The result uses the frame rate of `self`. Underflow wraps at a
     /// 24-hour boundary.
     fn sub(self, rhs: Self) -> Self::Output {
         let rate = FrameRate::from(self.frame_rate);
-        let fps = self.frame_rate.fps as u64;
-        let frames_per_day = fps * 86_400;
 
-        let result = if frames_per_day > 0 {
+        let result = if rate.frames_per_day() > 0 {
             if self.frame_count_cache >= rhs.frame_count_cache {
                 self.frame_count_cache - rhs.frame_count_cache
             } else {
                 // Wrap: borrow one 24-hour day
-                frames_per_day - (rhs.frame_count_cache - self.frame_count_cache) % frames_per_day
+                rate.frames_per_day()
+                    - (rhs.frame_count_cache - self.frame_count_cache) % rate.frames_per_day()
             }
         } else {
             self.frame_count_cache.saturating_sub(rhs.frame_count_cache)
@@ -782,18 +812,16 @@ impl core::ops::Sub for Timecode {
 }
 
 impl core::ops::Add<u32> for Timecode {
-    type Output = Result<Self, TimecodeError>;
+    type Output = Self;
 
     /// Add `rhs` frames to `self`, wrapping at a 24-hour boundary.
     ///
     /// The result uses the frame rate of `self`.
     fn add(self, rhs: u32) -> Self::Output {
         let rate = FrameRate::from(self.frame_rate);
-        let fps = self.frame_rate.fps as u64;
-        let frames_per_day = fps * 86_400;
 
-        let sum = if frames_per_day > 0 {
-            (self.frame_count_cache + rhs as u64) % frames_per_day
+        let sum = if rate.frames_per_day() > 0 {
+            (self.frame_count_cache + rhs as u64) % rate.frames_per_day()
         } else {
             self.frame_count_cache + rhs as u64
         };
@@ -803,7 +831,7 @@ impl core::ops::Add<u32> for Timecode {
 }
 
 impl core::ops::Add<TimecodeOffset> for Timecode {
-    type Output = Result<Self, TimecodeError>;
+    type Output = Self;
 
     fn add(self, rhs: TimecodeOffset) -> Self::Output {
         if rhs.is_negative {
@@ -815,7 +843,7 @@ impl core::ops::Add<TimecodeOffset> for Timecode {
 }
 
 impl core::ops::Sub<TimecodeOffset> for Timecode {
-    type Output = Result<Self, TimecodeError>;
+    type Output = Self;
 
     fn sub(self, rhs: TimecodeOffset) -> Self::Output {
         self + (-rhs)
@@ -943,12 +971,12 @@ impl core::ops::Add for TimecodeOffset {
     fn add(self, rhs: Self) -> Self::Output {
         if self.is_negative == rhs.is_negative {
             Ok(Self {
-                abs_time: (self.abs_time + rhs.abs_time)?,
+                abs_time: self.abs_time + rhs.abs_time,
                 is_negative: self.is_negative,
             })
         } else {
             Ok(Self {
-                abs_time: (self.abs_time.max(rhs.abs_time) - self.abs_time.min(rhs.abs_time))?,
+                abs_time: self.abs_time.max(rhs.abs_time) - self.abs_time.min(rhs.abs_time),
                 is_negative: if self.abs_time > rhs.abs_time {
                     self.is_negative
                 } else {
@@ -1276,7 +1304,7 @@ mod tests {
     fn test_add_timecodes() {
         let tc1 = Timecode::new(0, 0, 1, 0, FrameRate::Fps25).expect("valid"); // 1s
         let tc2 = Timecode::new(0, 0, 2, 0, FrameRate::Fps25).expect("valid"); // 2s
-        let result = (tc1 + tc2).expect("add should succeed");
+        let result = (tc1 + tc2);
         assert_eq!(result.seconds, 3);
         assert_eq!(result.frames, 0);
     }
@@ -1285,7 +1313,7 @@ mod tests {
     fn test_sub_timecodes() {
         let tc1 = Timecode::new(0, 0, 3, 0, FrameRate::Fps25).expect("valid"); // 3s
         let tc2 = Timecode::new(0, 0, 1, 0, FrameRate::Fps25).expect("valid"); // 1s
-        let result = (tc1 - tc2).expect("sub should succeed");
+        let result = (tc1 - tc2);
         assert_eq!(result.seconds, 2);
         assert_eq!(result.frames, 0);
     }
@@ -1294,13 +1322,13 @@ mod tests {
     fn test_add_u32_frames() {
         // 0:00:00:00 + 25 frames = 0:00:01:00 at 25fps
         let tc = Timecode::new(0, 0, 0, 0, FrameRate::Fps25).expect("valid");
-        let result = (tc + 25_u32).expect("add u32 should succeed");
+        let result = (tc + 25_u32);
         assert_eq!(result.seconds, 1);
         assert_eq!(result.frames, 0);
 
         // 23:59:59:24 + 1 frame wraps to 0:00:00:00
         let tc_near_end = Timecode::new(23, 59, 59, 24, FrameRate::Fps25).expect("valid");
-        let wrapped = (tc_near_end + 1_u32).expect("wrap should succeed");
+        let wrapped = (tc_near_end + 1_u32);
         assert_eq!(wrapped.hours, 0);
         assert_eq!(wrapped.minutes, 0);
         assert_eq!(wrapped.seconds, 0);
@@ -1400,28 +1428,28 @@ mod tests {
             Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
                 - TimecodeOffset::from_raw_fields(false, 0, 0, 0, 1, FrameRate::Fps25)
                     .expect("valid"),
-            Timecode::new(0, 0, 3, 24, FrameRate::Fps25)
+            Timecode::new(0, 0, 3, 24, FrameRate::Fps25).unwrap()
         );
         // sub negative one frame
         assert_eq!(
             Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
                 - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 1, FrameRate::Fps25)
                     .expect("valid"),
-            Timecode::new(0, 0, 4, 1, FrameRate::Fps25)
+            Timecode::new(0, 0, 4, 1, FrameRate::Fps25).unwrap()
         );
         // Sub negative multiple frames
         assert_eq!(
             Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
                 - TimecodeOffset::from_raw_fields(true, 0, 0, 0, 15, FrameRate::Fps25)
                     .expect("valid"),
-            Timecode::new(0, 0, 4, 15, FrameRate::Fps25)
+            Timecode::new(0, 0, 4, 15, FrameRate::Fps25).unwrap()
         );
         // Sub wrapping
         assert_eq!(
             Timecode::new(0, 0, 4, 0, FrameRate::Fps25).expect("valid")
                 - TimecodeOffset::from_raw_fields(false, 0, 3, 0, 0, FrameRate::Fps25)
                     .expect("valid"),
-            Timecode::new(23, 57, 4, 0, FrameRate::Fps25)
+            Timecode::new(23, 57, 4, 0, FrameRate::Fps25).unwrap()
         );
     }
 
@@ -1444,5 +1472,18 @@ mod tests {
             | ((2_u32) << 16)
             | ((3_u32) << 20);
         assert_eq!(user_bits, CORRECT, "{:x?} vs {:x?}", user_bits, CORRECT);
+    }
+
+    #[test]
+    fn test_convert_framerate() {
+        let tc0 = Timecode::from_frames(0, FrameRate::Fps25);
+        let tc1 = Timecode::from_str("01:02:03:04@50").unwrap();
+
+        assert_eq!(
+            tc1.convert_framerate(FrameRate::Fps25),
+            Timecode::from_str("01:02:03:02@25").unwrap()
+        );
+
+        assert_eq!(tc0 + tc1, Timecode::from_str("01:02:03:02@25").unwrap());
     }
 }
