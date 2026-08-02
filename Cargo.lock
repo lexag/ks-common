@@ -1758,7 +1758,7 @@ dependencies = [
 [[package]]
 name = "ks-common-generic"
 version = "2.3.0"
-source = "git+https://github.com/lexag/ks-common#5716aaa82b98480af68226412ad3a507ae2a86bc"
+source = "git+https://github.com/lexag/ks-common#7126e4952431a01ff846877ce64a1ac9aa4f281b"
 dependencies = [
  "bitflags 2.13.1",
 ]
@@ -1799,9 +1799,9 @@ checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
 
 [[package]]
 name = "libredox"
-version = "0.1.18"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c943259e342f1e06ff2da7a83eabdfe7f92ce10262688dbf1895ff0b3e6e4652"
+checksum = "2026a5056764a10b2bf5d56488cba40da507f5493a6a429340e2004d9ed085fa"
 dependencies = [
  "bitflags 2.13.1",
  "libc",
@@ -1859,12 +1859,12 @@ dependencies = [
 
 [[package]]
 name = "manifest-dir-macros"
-version = "0.1.19"
+version = "0.1.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2dcfa05324a9811f9d2e38b02b9bbb5a95a3d1b5f6cc87aa7916d041ec7b6988"
+checksum = "6b7b2bc162c9989d8408b9428a1a45e7e9116345ce5b459db7ee052195ffb60e"
 dependencies = [
  "quote",
- "syn 2.0.119",
+ "syn 3.0.3",
 ]
 
 [[package]]

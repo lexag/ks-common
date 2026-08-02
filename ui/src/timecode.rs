@@ -54,10 +54,7 @@ impl ConfigurationWidget for Timecode {
                 .ui(ui);
             let mut fr: FrameRate = fps.into();
             fr.autoenum_inline_widget_menu(ui, "Frame rate");
-            self.frame_rate = FrameRateInfo {
-                drop_frame: fr.is_drop_frame(),
-                fps: fr.frames_per_second() as u8,
-            };
+            *self = self.convert_framerate(fr);
         });
     }
 }
@@ -73,10 +70,7 @@ impl ConfigurationWidget for TimecodeOffset {
                 .ui(ui);
             let mut fr: FrameRate = fps.into();
             fr.autoenum_inline_widget_menu(ui, "Frame rate");
-            self.abs_time.frame_rate = FrameRateInfo {
-                drop_frame: fr.is_drop_frame(),
-                fps: fr.frames_per_second() as u8,
-            };
+            self.abs_time = self.abs_time.convert_framerate(fr);
         });
     }
 }
