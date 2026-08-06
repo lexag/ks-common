@@ -3,7 +3,7 @@ resolver = "3"
 members = ["clicks", "generic", "ui"]
 
 [workspace.package]
-version = "2.3.0"
+version = "2.4.0"
 edition = "2024"
 
 [workspace.lints.clippy]

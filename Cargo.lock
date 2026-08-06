@@ -1733,26 +1733,15 @@ checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 
 [[package]]
 name = "ks-common-clicks"
-version = "2.3.0"
+version = "2.4.0"
 dependencies = [
  "bitflags 2.13.1",
  "chrono",
- "ks-common-generic 2.3.0",
+ "ks-common-generic 2.4.0",
  "postcard",
  "serde",
  "serde_json",
  "tiny_sort",
-]
-
-[[package]]
-name = "ks-common-generic"
-version = "2.3.0"
-dependencies = [
- "bitflags 2.13.1",
- "hound",
- "postcard",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -1764,13 +1753,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "ks-common-generic"
+version = "2.4.0"
+dependencies = [
+ "bitflags 2.13.1",
+ "hound",
+ "postcard",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "ks-common-ui"
-version = "2.3.0"
+version = "2.4.0"
 dependencies = [
  "backtrace",
  "eframe",
  "egui",
- "ks-common-generic 2.3.0 (git+https://github.com/lexag/ks-common)",
+ "ks-common-generic 2.3.0",
  "manifest-dir-macros",
  "material-icons",
 ]
